@@ -9848,4 +9848,12 @@ window.selectSmartfuelsPosition = function(position) {
     window.__applySmartfuelsPositionBadge(position);
     window.__updateGreetingPosition(position);
     if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
-    if (!localStorage.ge
+    if (!localStorage.getItem('brdc_portal_tour_done')) {
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+</script>
+</body>
+</html>
