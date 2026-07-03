@@ -7032,6 +7032,9 @@ const DIR_DEPT_COLORS = {
     'IT':           { bg:'bg-blue-100',   text:'text-blue-600',   hover:'hover:border-blue-300 hover:bg-blue-50/20',   init:'text-blue-600' },
     'Accounting':   { bg:'bg-green-100',  text:'text-green-700',  hover:'hover:border-green-400 hover:bg-green-50/30', init:'text-green-700' },
     'Purchasing':   { bg:'bg-orange-100', text:'text-orange-600', hover:'hover:border-orange-400 hover:bg-orange-50/30',init:'text-orange-600' },
+    'auditor':      { bg:'bg-violet-100', text:'text-violet-700', hover:'hover:border-violet-400 hover:bg-violet-50/30',init:'text-violet-700' },
+    'neobros':      { bg:'bg-indigo-100', text:'text-indigo-600', hover:'hover:border-indigo-400 hover:bg-indigo-50/30',init:'text-indigo-600' },
+    'panpacific':   { bg:'bg-sky-100',    text:'text-sky-700',    hover:'hover:border-sky-400 hover:bg-sky-50/30',     init:'text-sky-700' },
 };
 function _dirColorFor(dept) {
     const key = Object.keys(DIR_DEPT_COLORS).find(k => dept && dept.toLowerCase().includes(k.toLowerCase()));
@@ -10033,6 +10036,7 @@ async function submitDirectoryEntry() {
     _dirMsg('success', name+' added to directory!');
     ['dir-name','dir-position','dir-email','dir-phone'].forEach(id=>document.getElementById(id).value='');
     renderAdminDirectory();
+    renderPublicDirectoryEntries();
 }
 function _dirMsg(type, text) {
     const el = document.getElementById('dir-msg'); if (!el) return;
@@ -10067,6 +10071,7 @@ async function deleteDirectoryEntry(id) {
     if (!confirm('Remove this entry?')) return;
     await SUPA.from('directory_entries').delete().eq('id', id);
     renderAdminDirectory();
+    renderPublicDirectoryEntries();
 }
 
 // ── QUICK LINKS MANAGER (Supabase) ────────────────────────────────────────────
