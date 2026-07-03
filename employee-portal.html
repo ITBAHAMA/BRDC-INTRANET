@@ -1638,7 +1638,6 @@
         const { error } = await SUPA.from('profiles').insert([{
             username, full_name: name, department: dept, position: position || null,
             password: btoa(pass), is_admin: isAdmin,
-            start_date: isOnboarding ? new Date().toISOString().slice(0, 10) : null,
             security_question: 'pet', security_answer: 'brdc'
         }]);
         if (error) { showNuMsg('Error: ' + error.message, false); return; }
