@@ -10086,4 +10086,239 @@ async function refreshActivityLog() {
     const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, last_login, last_seen').order('last_seen', { ascending: false, nullsFirst: false });
     if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No activity recorded yet.</p>'; return; }
     el.innerHTML = profiles.map(p=>`
-        <div class="flex items-center gap-3 bg
+        <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5">
+            <div class="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand-green font-bold text-xs flex-shrink-0">${(p.name||p.username||'?')[0]}</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-gray-800">${p.name||p.username} <span class="font-normal text-gray-400 uppercase text-[10px]">${p.dept||''}</span></p>
+                <p class="text-[10px] text-gray-400">Last seen: ${p.last_seen?new Date(p.last_seen).toLocaleString('en-PH'):'Never'}</p>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'bg-green-100 text-green-600':'bg-gray-100 text-gray-400'}">${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'Online':'Offline'}</span>
+        </div>`).join('');
+}
+
+// ── ONBOARDING TRACKER (reads from profiles table) ────────────────────────────
+async function refreshOnboardingTracker() {
+    const el = document.getElementById('admin-onboarding-list'); if (!el) return;
+    el.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
+    const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, onboarding_progress').order('name');
+    if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No onboarding data yet.</p>'; return; }
+    el.innerHTML = profiles.map(p=>{
+        const prog = p.onboarding_progress || {};
+        const tasks = prog.tasks || [];
+        const total = tasks.length || 0;
+        const done  = tasks.filter(t=>t.done||t.completed).length;
+        const pct   = total ? Math.round(done/total*100) : 0;
+        const col = pct>=80?'bg-green-500':pct>=40?'bg-yellow-400':'bg-red-400';
+        const tc  = pct>=80?'text-green-600':pct>=40?'text-yellow-600':'text-red-500';
+        return `<div class="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <div><p class="text-sm font-bold text-gray-900">${p.name||p.username} <span class="text-[10px] text-gray-400 uppercase">${p.dept||''}</span></p>
+                <p class="text-xs text-gray-500">${done} / ${total} tasks completed</p></div>
+                <span class="text-sm font-black ${tc}">${pct}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2"><div class="${col} h-2 rounded-full transition-all" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+}
+
+function handleMemoFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') { _memoMsg('error', 'Only PDF files are accepted.'); input.value = ''; return; }
+    if (file.size > 10 * 1024 * 1024) { _memoMsg('error', 'File exceeds 10 MB limit.'); input.value = ''; return; }
+    const nameEl = document.getElementById('memo-file-name');
+    nameEl.textContent = '📎 ' + file.name;
+    nameEl.classList.remove('hidden');
+    _memoMsg('', '');
+}
+
+function submitMemoUpload() {
+    const title = document.getElementById('memo-title').value.trim();
+    const dept  = document.getElementById('memo-dept').value;
+    const desc  = document.getElementById('memo-desc').value.trim();
+    const fileInput = document.getElementById('memo-file-input');
+    const file  = fileInput.files[0];
+    if (!title)  { _memoMsg('error', 'Please enter a memo title.'); return; }
+    if (!dept)   { _memoMsg('error', 'Please select a target department.'); return; }
+    if (!file)   { _memoMsg('error', 'Please select a PDF file to upload.'); return; }
+    _memoMsg('info', 'Reading file…');
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const { error } = await SUPA.from('admin_memos').insert({
+            title, dept, description: desc||null,
+            filename: file.name,
+            data_url: e.target.result,
+            uploaded_by: (window.__brdcUser && window.__brdcUser.name) || 'Admin'
+        });
+        if (error) { _memoMsg('error', 'Upload failed: ' + error.message); return; }
+        _memoMsg('success', '✓ Memo published successfully!');
+        document.getElementById('memo-title').value = '';
+        document.getElementById('memo-dept').value = '';
+        document.getElementById('memo-desc').value = '';
+        fileInput.value = '';
+        document.getElementById('memo-file-name').classList.add('hidden');
+        renderAdminMemos();
+    };
+    reader.onerror = function() { _memoMsg('error', 'Failed to read file. Please try again.'); };
+    reader.readAsDataURL(file);
+}
+
+function _memoMsg(type, text) {
+    const el = document.getElementById('memo-msg');
+    if (!el) return;
+    if (!type || !text) { el.classList.add('hidden'); el.textContent = ''; return; }
+    el.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700', 'bg-blue-50', 'text-blue-700');
+    if (type === 'error')   { el.classList.add('bg-red-50',   'text-red-700'); }
+    if (type === 'success') { el.classList.add('bg-green-50', 'text-green-700'); }
+    if (type === 'info')    { el.classList.add('bg-blue-50',  'text-blue-700'); }
+    el.textContent = text;
+}
+
+async function renderAdminMemos() {
+    const list   = document.getElementById('admin-memos-list');
+    if (!list) return;
+    list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
+    const filter = (document.getElementById('manage-dept-filter') || {}).value || 'all';
+    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
+    if (filter !== 'all') q = q.or(`dept.eq.${filter},dept.eq.all`);
+    const { data: shown, error } = await q;
+    if (error || !shown || !shown.length) { list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No memos found.</p>'; return; }
+    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
+    list.innerHTML = shown.map(m => {
+        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        const dLabel = deptLabel[m.dept] || m.dept;
+        return `<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
+            <i class="ph-fill ph-file-pdf text-3xl text-red-400 flex-shrink-0 mt-0.5"></i>
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
+                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
+                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+                <a href="${m.data_url}" download="${m.filename}" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-download-simple"></i> Download</a>
+                <button onclick="deleteMemo(${m.id})" class="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-trash"></i> Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function deleteMemo(id) {
+    if (!confirm('Delete this memo? This cannot be undone.')) return;
+    await SUPA.from('admin_memos').delete().eq('id', id);
+    renderAdminMemos();
+    renderDeptMemos(); // keep dashboard in sync
+}
+
+async function renderDeptMemos() {
+    const tile   = document.getElementById('dept-memos-tile');
+    const list   = document.getElementById('dept-memos-list');
+    const badge  = document.getElementById('dept-memos-badge');
+    if (!tile || !list) return;
+    const user = window.__brdcUser;
+    if (!user || !user.dept) { tile.classList.add('hidden'); return; }
+    const userDept = user.dept.toLowerCase();
+    const isAdmin  = user.isAdmin;
+    // Admins see all memos; employees see only their dept + 'all'
+    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
+    if (!isAdmin) q = q.or(`dept.eq.${userDept},dept.eq.all`);
+    const { data: relevant, error } = await q;
+    if (error || !relevant || !relevant.length) {
+        tile.classList.add('hidden');
+        return;
+    }
+    tile.classList.remove('hidden');
+    // Update badge count
+    if (badge) {
+        badge.textContent = relevant.length;
+        badge.classList.remove('hidden');
+    }
+    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
+    list.innerHTML = relevant.map(m => {
+        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        const dLabel = deptLabel[m.dept] || m.dept;
+        return `<div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
+            <i class="ph-fill ph-file-pdf text-2xl text-red-400 flex-shrink-0 mt-0.5"></i>
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
+                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
+                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
+                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
+                </div>
+            </div>
+            <a href="${m.data_url}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"><i class="ph-fill ph-download-simple"></i> Open</a>
+        </div>`;
+    }).join('');
+}
+
+// ─── CMG ADMIN POSITION SELECTOR ──────────────────────────────────────────────
+window.__applyCmgPositionBadge = function(position) {
+    const existing = document.getElementById('cmg-position-badge');
+    if (existing) existing.remove();
+    const sidebarLabel = document.getElementById('sidebar-dept-label');
+    if (sidebarLabel) {
+        const badge = document.createElement('div');
+        badge.id = 'cmg-position-badge';
+        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
+        badge.textContent = '🏢 ' + position;
+        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
+    }
+};
+window.selectCmgPosition = function(position) {
+    const raw = localStorage.getItem('brdc_portal_session');
+    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
+    if (window.__brdcUser) window.__brdcUser.position = position;
+    const user = window.__brdcUser;
+    if (user && user.username && typeof SUPA !== 'undefined') {
+        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
+    }
+    const posModal = document.getElementById('cmg-position-modal');
+    if (posModal) posModal.classList.add('hidden');
+    window.__applyCmgPositionBadge(position);
+    window.__updateGreetingPosition(position);
+    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
+    if (!localStorage.getItem('brdc_portal_tour_done')) {
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+
+// ─── SMARTFUELS POSITION SELECTOR ──────────────────────────────────────────────
+window.__applySmartfuelsPositionBadge = function(position) {
+    const existing = document.getElementById('smartfuels-position-badge');
+    if (existing) existing.remove();
+    const sidebarLabel = document.getElementById('sidebar-dept-label');
+    if (sidebarLabel) {
+        const badge = document.createElement('div');
+        badge.id = 'smartfuels-position-badge';
+        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#c2410c,#f97316);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
+        badge.textContent = '⛽ ' + position;
+        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
+    }
+};
+window.selectSmartfuelsPosition = function(position) {
+    const raw = localStorage.getItem('brdc_portal_session');
+    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
+    if (window.__brdcUser) window.__brdcUser.position = position;
+    const user = window.__brdcUser;
+    if (user && user.username && typeof SUPA !== 'undefined') {
+        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
+    }
+    const posModal = document.getElementById('smartfuels-position-modal');
+    if (posModal) posModal.classList.add('hidden');
+    window.__applySmartfuelsPositionBadge(position);
+    window.__updateGreetingPosition(position);
+    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
+    if (!localStorage.getItem('brdc_portal_tour_done')) {
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+</script>
+</body>
+</html>
