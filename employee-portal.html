@@ -1912,10 +1912,16 @@
                             <i class="ph-fill ph-buildings text-sky-500"></i> Team Updates
                             <span id="dept-ann-badge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-600 hidden"></span>
                         </h2>
-                        <button id="dept-ann-post-btn" onclick="openDeptAnnPost()" style="display:none;"
-                            class="flex items-center gap-1.5 text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 px-3 py-1.5 rounded-xl transition-colors shadow-sm">
-                            <i class="ph-bold ph-plus"></i> Post Update
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button id="dept-ann-mark-all-btn" onclick="markAllAcknowledged()" style="display:none;"
+                                class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-colors">
+                                <i class="ph-fill ph-checks"></i> Mark All Read
+                            </button>
+                            <button id="dept-ann-post-btn" onclick="openDeptAnnPost()" style="display:none;"
+                                class="flex items-center gap-1.5 text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 px-3 py-1.5 rounded-xl transition-colors shadow-sm">
+                                <i class="ph-bold ph-plus"></i> Post Update
+                            </button>
+                        </div>
                     </div>
                     <div id="dept-ann-list" class="space-y-3 max-h-60 overflow-y-auto pr-1">
                         <div class="flex flex-col items-center justify-center py-6 text-center">
@@ -2404,7 +2410,7 @@
                 </div>
                 <!-- HR -->
                 <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-6">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Human Resources</h3>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">Human Resources <span id="dir-count-hr" class="hidden text-[10px] font-black bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full normal-case"></span></h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-pink-300 hover:bg-pink-50/20 transition-colors">
                             <div class="w-12 h-12 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center flex-shrink-0 font-bold text-sm">EB</div>
@@ -2464,7 +2470,7 @@
                 </div>
                 <!-- IT -->
                 <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-6">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">IT Department</h3>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">IT Department <span id="dir-count-it" class="hidden text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full normal-case"></span></h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-300 hover:bg-blue-50/20 transition-colors">
                             <div class="w-12 h-12 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center flex-shrink-0 font-bold text-sm">JL</div>
@@ -2497,7 +2503,7 @@
                 </div>
                 <!-- Purchasing -->
                 <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-6">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Purchasing Department</h3>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">Purchasing Department <span id="dir-count-purchasing" class="hidden text-[10px] font-black bg-green-100 text-green-600 px-2 py-0.5 rounded-full normal-case"></span></h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-orange-400 hover:bg-orange-50/30 transition-colors bg-white">
                             <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 font-bold text-sm">RD</div>
@@ -2530,7 +2536,7 @@
                 </div>
                 <!-- Accounting -->
                 <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-6">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Accounting Department</h3>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">Accounting Department <span id="dir-count-accounting" class="hidden text-[10px] font-black bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full normal-case"></span></h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-green-400 hover:bg-green-50/30 transition-colors bg-white"><div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0 font-bold text-sm">DA</div><div class="flex-1 min-w-0"><p class="font-bold text-gray-900 text-sm">Diana Abarintos</p><p class="text-xs text-gray-500 uppercase mb-1">Accounting Manager</p><a href="mailto:acct-manager@bahama.ph" class="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 truncate mb-0.5"><i class="ph-fill ph-envelope"></i> acct-manager@bahama.ph</a><a href="viber://chat?number=+639399178578" class="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800"><i class="ph-fill ph-phone"></i> 0939-917-8578 <span class="ml-1 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-600 text-[10px] font-semibold">Viber</span></a></div></div>
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-green-400 hover:bg-green-50/30 transition-colors bg-white"><div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0 font-bold text-sm">RC</div><div class="flex-1 min-w-0"><p class="font-bold text-gray-900 text-sm">Ruby Marie Coralde</p><p class="text-xs text-gray-500 uppercase mb-1">Asst. Accounting Manager</p><a href="mailto:rccoralde@bahama.ph" class="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 truncate mb-0.5"><i class="ph-fill ph-envelope"></i> rccoralde@bahama.ph</a><a href="viber://chat?number=+639681614822" class="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800"><i class="ph-fill ph-phone"></i> 0968-161-4822 <span class="ml-1 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-600 text-[10px] font-semibold">Viber</span></a></div></div>
@@ -2545,7 +2551,7 @@
                 </div>
                 <!-- CMG -->
                 <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-6">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">CMG Admin Department</h3>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">CMG Admin Department <span id="dir-count-cmg" class="hidden text-[10px] font-black bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full normal-case"></span></h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-purple-400 hover:bg-purple-50/30 transition-colors bg-white"><div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold text-sm"></div><div class="flex-1 min-w-0"><p class="font-bold text-sm italic text-gray-400"> name </p><p class="text-xs text-gray-400 uppercase italic mb-1"> position </p><p class="text-xs text-purple-400 italic"> email </p></div></div>
                         <div class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-purple-400 hover:bg-purple-50/30 transition-colors bg-white"><div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold text-sm"></div><div class="flex-1 min-w-0"><p class="font-bold text-sm italic text-gray-400"> name </p><p class="text-xs text-gray-400 uppercase italic mb-1"> position </p><p class="text-xs text-purple-400 italic"> email </p></div></div>
@@ -3380,9 +3386,19 @@
                             <label class="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Message <span class="text-red-500">*</span></label>
                             <textarea id="da-body" rows="3" placeholder="Write your team update here…" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 transition-all resize-none"></textarea>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input id="da-pinned" type="checkbox" class="w-4 h-4 accent-amber-500 rounded" >
-                            <label for="da-pinned" class="text-xs font-semibold text-gray-600">📌 Pin this announcement</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center gap-2">
+                                <input id="da-pinned" type="checkbox" class="w-4 h-4 accent-amber-500 rounded" >
+                                <label for="da-pinned" class="text-xs font-semibold text-gray-600">📌 Pin this announcement</label>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1.5 uppercase tracking-wide">Priority</label>
+                                <select id="da-priority" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 transition-all bg-white">
+                                    <option value="info">ℹ️ Info (Default)</option>
+                                    <option value="urgent">🔴 Urgent</option>
+                                    <option value="fyi">💡 FYI</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <button onclick="submitDeptAnn()" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-sm transition-all">
@@ -3409,9 +3425,14 @@
                 <div id="admin-panel-acklog" class="bento-tile p-6 space-y-5 hidden">
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <h3 class="font-bold text-gray-900 flex items-center gap-2"><i class="ph-fill ph-check-circle text-emerald-500"></i> Announcement Acknowledgements</h3>
-                        <button onclick="loadAckLog()" class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors">
-                            <i class="ph-fill ph-arrows-clockwise"></i> Refresh
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportAckLogCSV()" class="flex items-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
+                                <i class="ph-fill ph-download-simple"></i> Export CSV
+                            </button>
+                            <button onclick="loadAckLog()" class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors">
+                                <i class="ph-fill ph-arrows-clockwise"></i> Refresh
+                            </button>
+                        </div>
                     </div>
                     <!-- Announcement picker -->
                     <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-3 flex-wrap">
@@ -3424,6 +3445,15 @@
                     <div id="admin-ack-log" class="space-y-2 max-h-96 overflow-y-auto pr-1">
                         <p class="text-sm text-gray-400 text-center py-6">Loading acknowledgements…</p>
                     </div>
+                    <div id="ack-log-pagination" class="hidden flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <button onclick="ackLogPrevPage()" id="ack-prev-btn" class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-emerald-600 bg-white border border-gray-200 hover:border-emerald-300 px-3 py-1.5 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="ph-fill ph-caret-left"></i> Prev
+                        </button>
+                        <span id="ack-page-info" class="text-xs font-bold text-gray-500"></span>
+                        <button onclick="ackLogNextPage()" id="ack-next-btn" class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-emerald-600 bg-white border border-gray-200 hover:border-emerald-300 px-3 py-1.5 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="ph-fill ph-caret-right"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ── LOGIN LOG TAB ── -->
@@ -3432,6 +3462,9 @@
                         <h3 class="font-bold text-gray-900 flex items-center gap-2"><i class="ph-fill ph-sign-in text-violet-500"></i> Login History</h3>
                         <div class="flex items-center gap-2">
                             <input id="loginlog-search" type="text" placeholder="Search username…" oninput="filterLoginLog()" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-300 bg-white">
+                            <button onclick="exportLoginLogCSV()" class="flex items-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
+                                <i class="ph-fill ph-download-simple"></i> Export CSV
+                            </button>
                             <button onclick="loadLoginLog()" class="flex items-center gap-1.5 text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="ph-fill ph-arrows-clockwise"></i> Refresh
                             </button>
@@ -3439,6 +3472,15 @@
                     </div>
                     <div id="admin-login-log" class="space-y-2 max-h-96 overflow-y-auto pr-1">
                         <p class="text-sm text-gray-400 text-center py-6">Loading login history…</p>
+                    </div>
+                    <div id="login-log-pagination" class="hidden flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <button onclick="loginLogPrevPage()" id="login-prev-btn" class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-violet-600 bg-white border border-gray-200 hover:border-violet-300 px-3 py-1.5 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="ph-fill ph-caret-left"></i> Prev
+                        </button>
+                        <span id="login-page-info" class="text-xs font-bold text-gray-500"></span>
+                        <button onclick="loginLogNextPage()" id="login-next-btn" class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-violet-600 bg-white border border-gray-200 hover:border-violet-300 px-3 py-1.5 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="ph-fill ph-caret-right"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -4351,10 +4393,20 @@
                         <textarea id="dh-body" rows="4" placeholder="Write your announcement here…"
                             class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sky-400 transition-all resize-none"></textarea>
                     </div>
-                    <label class="flex items-center gap-3 cursor-pointer select-none">
-                        <input id="dh-pinned" type="checkbox" class="w-4 h-4 rounded accent-sky-500">
-                        <span class="text-sm text-gray-700 font-medium">📌 Pin this announcement</span>
-                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                        <label class="flex items-center gap-3 cursor-pointer select-none">
+                            <input id="dh-pinned" type="checkbox" class="w-4 h-4 rounded accent-sky-500">
+                            <span class="text-sm text-gray-700 font-medium">📌 Pin this announcement</span>
+                        </label>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Priority</label>
+                            <select id="dh-priority" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-400 transition-all bg-white">
+                                <option value="info">ℹ️ Info (Default)</option>
+                                <option value="urgent">🔴 Urgent</option>
+                                <option value="fyi">💡 FYI</option>
+                            </select>
+                        </div>
+                    </div>
                     <p id="dh-msg" class="text-sm font-medium min-h-[1.25rem]"></p>
                     <div class="flex gap-3">
                         <button onclick="closeDHPostModal()" class="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 transition-all">
@@ -6355,6 +6407,9 @@ function showSection(id) {
     if (id === 'directory' && typeof renderPublicDirectoryEntries === 'function') {
         renderPublicDirectoryEntries();
     }
+    if (id === 'directory') {
+        loadDirectoryCounts();
+    }
 }
 
 // Desktop nav
@@ -6956,6 +7011,38 @@ function _dirColorFor(dept) {
 function _dirInitials(name) {
     return (name||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
 }
+
+// ─── DIRECTORY DEPT COUNT BADGES ─────────────────────────────────────────────
+async function loadDirectoryCounts() {
+    // Map badge element IDs to the dept values stored in profiles
+    const deptMap = {
+        'dir-count-hr':          ['hr','human resources','human resource'],
+        'dir-count-it':          ['it','it department','information technology'],
+        'dir-count-purchasing':  ['purchasing','purchasing department'],
+        'dir-count-accounting':  ['accounting','accounting department'],
+        'dir-count-cmg':         ['cmg','cmg admin','cmg admin department'],
+    };
+    try {
+        const { data: profiles, error } = await SUPA.from('profiles').select('dept');
+        if (error || !profiles) return;
+        // Count per dept (normalise to lowercase)
+        const counts = {};
+        profiles.forEach(p => {
+            const d = (p.dept || '').toLowerCase().trim();
+            counts[d] = (counts[d] || 0) + 1;
+        });
+        Object.entries(deptMap).forEach(([spanId, keys]) => {
+            const el = document.getElementById(spanId);
+            if (!el) return;
+            const total = keys.reduce((sum, k) => sum + (counts[k] || 0), 0);
+            if (total > 0) {
+                el.textContent = total + ' employee' + (total !== 1 ? 's' : '');
+                el.classList.remove('hidden');
+            }
+        });
+    } catch(e) { /* silently ignore */ }
+}
+
 async function renderPublicDirectoryEntries() {
     const container = document.getElementById('dir-db-entries');
     if (!container) return;
@@ -9139,6 +9226,8 @@ async function loadDeptAnnouncements() {
     if (error || !data || !data.length) {
         list.innerHTML = '<div class="flex flex-col items-center justify-center py-6 text-center"><i class="ph-fill ph-buildings text-gray-200 text-3xl mb-2"></i><p class="text-xs text-gray-400">No team updates yet.</p></div>';
         if (badge) badge.classList.add('hidden');
+        const markAllBtn = document.getElementById('dept-ann-mark-all-btn');
+        if (markAllBtn) markAllBtn.style.display = 'none';
         return;
     }
     const count = data.length;
@@ -9159,11 +9248,17 @@ async function loadDeptAnnouncements() {
         (acks || []).forEach(a => ackedIds.add(a.announcement_id));
     }
 
+    // Show "Mark All Read" only if any unacknowledged items exist
+    const markAllBtn = document.getElementById('dept-ann-mark-all-btn');
+    const hasUnacked = data.some(d => !ackedIds.has(d.id));
+    if (markAllBtn) markAllBtn.style.display = hasUnacked ? '' : 'none';
+
     list.innerHTML = data.map(d => {
         const dt = new Date(d.posted_at);
         const dateStr = mNames[dt.getMonth()] + ' ' + dt.getDate();
         const pinIcon = d.pinned ? '<i class="ph-fill ph-push-pin text-amber-500 text-xs mr-1"></i>' : '';
         const pinClass = d.pinned ? 'pinned' : '';
+        const priBadge = _priorityBadge(d.priority || 'info');
         const isAcked = ackedIds.has(d.id);
         const ackBtn = isAcked
             ? `<button disabled class="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 px-2.5 py-1 rounded-lg cursor-default mt-2">
@@ -9174,7 +9269,7 @@ async function loadDeptAnnouncements() {
                </button>`;
         return `<div class="da-item ${pinClass}" id="da-ann-${d.id}">
             <div class="flex items-start justify-between gap-2 mb-1">
-                <p class="text-sm font-bold text-gray-800">${pinIcon}${(d.title||'').replace(/</g,'&lt;')}</p>
+                <div class="flex items-center flex-wrap gap-1.5">${pinIcon}${priBadge}<p class="text-sm font-bold text-gray-800">${(d.title||'').replace(/</g,'&lt;')}</p></div>
                 <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">${dateStr}</span>
             </div>
             <p class="text-xs text-gray-600 leading-relaxed">${(d.body||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
@@ -9184,6 +9279,21 @@ async function loadDeptAnnouncements() {
             </div>
         </div>`;
     }).join('');
+}
+
+async function markAllAcknowledged() {
+    const user = window.__brdcUser;
+    if (!user || !user.username) return;
+    const btn = document.getElementById('dept-ann-mark-all-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-fill ph-circle-notch"></i> Marking…'; }
+    // Collect all unacknowledged buttons
+    const ackBtns = Array.from(document.querySelectorAll('#dept-ann-list button[onclick^="acknowledgeAnnouncement"]'));
+    await Promise.all(ackBtns.map(b => {
+        const m = b.getAttribute('onclick').match(/acknowledgeAnnouncement\((\d+)/);
+        if (m) return acknowledgeAnnouncement(parseInt(m[1]), b);
+    }).filter(Boolean));
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-fill ph-checks"></i> Mark All Read'; }
+    loadDeptAnnouncements();
 }
 
 function openDeptAnnPost() {
@@ -9216,22 +9326,24 @@ function closeDHPostModal() {
     if (overlay) overlay.style.display = 'none';
     ['dh-title','dh-body'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     const cb = document.getElementById('dh-pinned'); if (cb) cb.checked = false;
+    const pr = document.getElementById('dh-priority'); if (pr) pr.value = 'info';
     const msg = document.getElementById('dh-msg'); if (msg) msg.textContent = '';
 }
 
 async function submitDHPost() {
-    const title  = (document.getElementById('dh-title')||{}).value?.trim();
-    const dept   = (document.getElementById('dh-dept')||{}).value;
-    const body   = (document.getElementById('dh-body')||{}).value?.trim();
-    const pinned = (document.getElementById('dh-pinned')||{}).checked;
-    const msgEl  = document.getElementById('dh-msg');
-    const user   = window.__brdcUser;
+    const title    = (document.getElementById('dh-title')||{}).value?.trim();
+    const dept     = (document.getElementById('dh-dept')||{}).value;
+    const body     = (document.getElementById('dh-body')||{}).value?.trim();
+    const pinned   = (document.getElementById('dh-pinned')||{}).checked;
+    const priority = document.getElementById('dh-priority')?.value || 'info';
+    const msgEl    = document.getElementById('dh-msg');
+    const user     = window.__brdcUser;
 
     if (!title || !body) { if (msgEl) { msgEl.textContent = 'Title and message are required.'; msgEl.style.color = '#ef4444'; } return; }
 
     if (msgEl) { msgEl.textContent = 'Posting…'; msgEl.style.color = '#6b7280'; }
     const { error } = await SUPA.from('dept_announcements').insert({
-        title, dept, body, pinned,
+        title, dept, body, pinned, priority,
         posted_by: user?.name || user?.username || 'Dept Head'
     });
     if (error) {
@@ -9243,18 +9355,19 @@ async function submitDHPost() {
 }
 
 async function submitDeptAnn() {
-    const title  = (document.getElementById('da-title')||{}).value?.trim();
-    const dept   = (document.getElementById('da-dept')||{}).value;
-    const body   = (document.getElementById('da-body')||{}).value?.trim();
-    const pinned = (document.getElementById('da-pinned')||{}).checked;
-    const msgEl  = document.getElementById('da-msg');
+    const title    = (document.getElementById('da-title')||{}).value?.trim();
+    const dept     = (document.getElementById('da-dept')||{}).value;
+    const body     = (document.getElementById('da-body')||{}).value?.trim();
+    const pinned   = (document.getElementById('da-pinned')||{}).checked;
+    const priority = document.getElementById('da-priority')?.value || 'info';
+    const msgEl    = document.getElementById('da-msg');
 
     if (!title || !body) {
         if (msgEl) { msgEl.textContent = '⚠️ Title and message are required.'; msgEl.style.color = '#ef4444'; msgEl.classList.remove('hidden'); }
         return;
     }
     const user = window.__brdcUser;
-    const { error } = await SUPA.from('dept_announcements').insert({ title, body, dept: dept||'all', posted_by: user?.name||user?.username||'Admin', pinned });
+    const { error } = await SUPA.from('dept_announcements').insert({ title, body, dept: dept||'all', posted_by: user?.name||user?.username||'Admin', pinned, priority });
     if (error) {
         if (msgEl) { msgEl.textContent = '❌ Failed: ' + error.message; msgEl.style.color = '#ef4444'; msgEl.classList.remove('hidden'); }
         return;
@@ -9263,6 +9376,7 @@ async function submitDeptAnn() {
     document.getElementById('da-title').value = '';
     document.getElementById('da-body').value = '';
     document.getElementById('da-pinned').checked = false;
+    if (document.getElementById('da-priority')) document.getElementById('da-priority').value = 'info';
     setTimeout(() => msgEl.classList.add('hidden'), 3000);
     loadAdminDeptAnns();
     loadDeptAnnouncements();
@@ -9297,9 +9411,11 @@ async function acknowledgeAnnouncement(annId, btnEl) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN — ACK LOG
+// ADMIN — ACK LOG (with pagination + CSV export)
 // ─────────────────────────────────────────────────────────────────────────────
 let _ackLogAllData = [];
+let _ackLogPage    = 1;
+const _ACK_PAGE_SIZE = 20;
 
 async function loadAckLog() {
     const listEl  = document.getElementById('admin-ack-log');
@@ -9307,6 +9423,7 @@ async function loadAckLog() {
     const summEl  = document.getElementById('ack-summary');
     if (!listEl) return;
     listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
+    _ackLogPage = 1;
 
     // Load announcements for filter dropdown
     const { data: anns } = await SUPA.from('dept_announcements').select('id,title,dept').order('posted_at', { ascending: false }).limit(50);
@@ -9323,23 +9440,41 @@ async function loadAckLog() {
     }
 
     const filterId = selEl ? selEl.value : '';
-    let query = SUPA.from('announcement_acknowledgements').select('*').order('acknowledged_at', { ascending: false }).limit(200);
+    let query = SUPA.from('announcement_acknowledgements').select('*').order('acknowledged_at', { ascending: false }).limit(500);
     if (filterId) query = query.eq('announcement_id', filterId);
     const { data: acks, error } = await query;
 
     if (error || !acks || !acks.length) {
         listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No acknowledgements yet.</p>';
         if (summEl) summEl.textContent = '';
+        document.getElementById('ack-log-pagination')?.classList.add('hidden');
         return;
     }
     _ackLogAllData = acks;
-    if (summEl) summEl.textContent = `${acks.length} acknowledgement${acks.length !== 1 ? 's' : ''}`;
-
-    // Get title map
+    // Attach ann title map for rendering
     const annMap = {};
     (anns || []).forEach(a => { annMap[a.id] = a.title; });
+    _ackLogAllData._annMap = annMap;
+    if (summEl) summEl.textContent = `${acks.length} acknowledgement${acks.length !== 1 ? 's' : ''}`;
+    _renderAckLogPage();
+}
 
-    listEl.innerHTML = acks.map(a => {
+function _renderAckLogPage() {
+    const listEl = document.getElementById('admin-ack-log');
+    const pagEl  = document.getElementById('ack-log-pagination');
+    const infoEl = document.getElementById('ack-page-info');
+    const prevBtn = document.getElementById('ack-prev-btn');
+    const nextBtn = document.getElementById('ack-next-btn');
+    if (!listEl) return;
+    const data = _ackLogAllData;
+    const annMap = data._annMap || {};
+    const total = data.length;
+    const totalPages = Math.max(1, Math.ceil(total / _ACK_PAGE_SIZE));
+    _ackLogPage = Math.min(Math.max(1, _ackLogPage), totalPages);
+    const start = (_ackLogPage - 1) * _ACK_PAGE_SIZE;
+    const page  = data.slice(start, start + _ACK_PAGE_SIZE);
+
+    listEl.innerHTML = page.map(a => {
         const dt = new Date(a.acknowledged_at);
         const dtStr = dt.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' })
                     + ' ' + dt.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
@@ -9358,49 +9493,93 @@ async function loadAckLog() {
             </div>
         </div>`;
     }).join('');
+
+    if (total > _ACK_PAGE_SIZE && pagEl) {
+        pagEl.classList.remove('hidden');
+        if (infoEl) infoEl.textContent = `Page ${_ackLogPage} of ${totalPages} · ${total} total`;
+        if (prevBtn) prevBtn.disabled = _ackLogPage <= 1;
+        if (nextBtn) nextBtn.disabled = _ackLogPage >= totalPages;
+    } else if (pagEl) {
+        pagEl.classList.add('hidden');
+    }
+}
+
+function ackLogPrevPage() { _ackLogPage--; _renderAckLogPage(); }
+function ackLogNextPage() { _ackLogPage++; _renderAckLogPage(); }
+
+function exportAckLogCSV() {
+    if (!_ackLogAllData.length) { alert('No data to export.'); return; }
+    const annMap = _ackLogAllData._annMap || {};
+    const rows = [['Full Name','Username','Department','Position','Announcement','Acknowledged At']];
+    _ackLogAllData.forEach(a => {
+        const annTitle = annMap[a.announcement_id] || `#${a.announcement_id}`;
+        const dt = new Date(a.acknowledged_at).toLocaleString('en-PH');
+        rows.push([a.full_name||'', a.username||'', a.dept||'', a.position||'', annTitle, dt]);
+    });
+    _downloadCSV(rows, 'ack_log_' + new Date().toISOString().slice(0,10) + '.csv');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN — LOGIN LOG
+// ADMIN — LOGIN LOG (with pagination + CSV export)
 // ─────────────────────────────────────────────────────────────────────────────
-let _loginLogAllData = [];
+let _loginLogAllData    = [];
+let _loginLogFiltered   = [];
+let _loginLogPage       = 1;
+const _LOGIN_PAGE_SIZE  = 20;
 
 async function loadLoginLog() {
     const listEl = document.getElementById('admin-login-log');
     if (!listEl) return;
     listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
+    _loginLogPage = 1;
 
     const { data: logs, error } = await SUPA.from('login_logs')
         .select('*')
         .order('logged_in_at', { ascending: false })
-        .limit(300);
+        .limit(1000);
 
     if (error || !logs || !logs.length) {
         listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No login records yet.</p>';
+        document.getElementById('login-log-pagination')?.classList.add('hidden');
         return;
     }
     _loginLogAllData = logs;
+    _loginLogFiltered = logs;
     _renderLoginLog(logs);
 }
 
 function filterLoginLog() {
     const q = (document.getElementById('loginlog-search')?.value || '').toLowerCase();
-    const filtered = q ? _loginLogAllData.filter(l =>
+    _loginLogPage = 1;
+    _loginLogFiltered = q ? _loginLogAllData.filter(l =>
         (l.username||'').toLowerCase().includes(q) ||
         (l.full_name||'').toLowerCase().includes(q) ||
         (l.dept||'').toLowerCase().includes(q)
     ) : _loginLogAllData;
-    _renderLoginLog(filtered);
+    _renderLoginLog(_loginLogFiltered);
 }
 
 function _renderLoginLog(logs) {
-    const listEl = document.getElementById('admin-login-log');
+    const listEl  = document.getElementById('admin-login-log');
+    const pagEl   = document.getElementById('login-log-pagination');
+    const infoEl  = document.getElementById('login-page-info');
+    const prevBtn = document.getElementById('login-prev-btn');
+    const nextBtn = document.getElementById('login-next-btn');
     if (!listEl) return;
-    if (!logs.length) { listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No results.</p>'; return; }
+    if (!logs.length) {
+        listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No results.</p>';
+        if (pagEl) pagEl.classList.add('hidden');
+        return;
+    }
+    const total      = logs.length;
+    const totalPages = Math.max(1, Math.ceil(total / _LOGIN_PAGE_SIZE));
+    _loginLogPage    = Math.min(Math.max(1, _loginLogPage), totalPages);
+    const start      = (_loginLogPage - 1) * _LOGIN_PAGE_SIZE;
+    const page       = logs.slice(start, start + _LOGIN_PAGE_SIZE);
 
-    // Group by date
+    // Group by date (on current page only)
     const groups = {};
-    logs.forEach(l => {
+    page.forEach(l => {
         const d = new Date(l.logged_in_at);
         const key = d.toLocaleDateString('en-PH', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
         if (!groups[key]) groups[key] = [];
@@ -9432,9 +9611,49 @@ function _renderLoginLog(logs) {
             </div>
         </div>
     `).join('');
+
+    if (total > _LOGIN_PAGE_SIZE && pagEl) {
+        pagEl.classList.remove('hidden');
+        if (infoEl) infoEl.textContent = `Page ${_loginLogPage} of ${totalPages} · ${total} total`;
+        if (prevBtn) prevBtn.disabled = _loginLogPage <= 1;
+        if (nextBtn) nextBtn.disabled = _loginLogPage >= totalPages;
+    } else if (pagEl) {
+        pagEl.classList.add('hidden');
+    }
+}
+
+function loginLogPrevPage() { _loginLogPage--; _renderLoginLog(_loginLogFiltered); }
+function loginLogNextPage() { _loginLogPage++; _renderLoginLog(_loginLogFiltered); }
+
+function exportLoginLogCSV() {
+    if (!_loginLogAllData.length) { alert('No data to export.'); return; }
+    const rows = [['Full Name','Username','Department','Position','Logged In At']];
+    _loginLogAllData.forEach(l => {
+        const dt = new Date(l.logged_in_at).toLocaleString('en-PH');
+        rows.push([l.full_name||'', l.username||'', l.dept||'', l.position||'', dt]);
+    });
+    _downloadCSV(rows, 'login_log_' + new Date().toISOString().slice(0,10) + '.csv');
+}
+
+function _downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+function _priorityBadge(priority) {
+    const map = {
+        urgent: '<span class="inline-flex items-center gap-0.5 bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide">🔴 Urgent</span>',
+        info:   '<span class="inline-flex items-center gap-0.5 bg-sky-100 text-sky-700 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide">ℹ️ Info</span>',
+        fyi:    '<span class="inline-flex items-center gap-0.5 bg-amber-100 text-amber-700 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide">💡 FYI</span>',
+    };
+    return map[priority] || map['info'];
+}
+
 async function loadAdminDeptAnns() {
     const listEl = document.getElementById('admin-deptann-list');
     if (!listEl) return;
@@ -9454,9 +9673,10 @@ async function loadAdminDeptAnns() {
         const dt = new Date(d.posted_at);
         const dateStr = mNames[dt.getMonth()] + ' ' + dt.getDate() + ', ' + dt.getFullYear();
         const pinLabel = d.pinned ? '<span class="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded">PINNED</span> ' : '';
+        const priBadge = _priorityBadge(d.priority || 'info');
         return `<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-gray-800">${pinLabel}${(d.title||'').replace(/</g,'&lt;')}</p>
+                <div class="flex items-center flex-wrap gap-1.5 mb-0.5">${pinLabel}${priBadge}<p class="text-sm font-bold text-gray-800">${(d.title||'').replace(/</g,'&lt;')}</p></div>
                 <p class="text-xs text-gray-500 mt-0.5">${(d.body||'').slice(0,120).replace(/</g,'&lt;')}${d.body?.length>120?'…':''}</p>
                 <p class="text-[10px] text-gray-400 mt-1">${d.dept==='all'?'All Depts':d.dept} · ${dateStr} · by ${d.posted_by||''}</p>
             </div>
@@ -9866,239 +10086,4 @@ async function refreshActivityLog() {
     const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, last_login, last_seen').order('last_seen', { ascending: false, nullsFirst: false });
     if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No activity recorded yet.</p>'; return; }
     el.innerHTML = profiles.map(p=>`
-        <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5">
-            <div class="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand-green font-bold text-xs flex-shrink-0">${(p.name||p.username||'?')[0]}</div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-800">${p.name||p.username} <span class="font-normal text-gray-400 uppercase text-[10px]">${p.dept||''}</span></p>
-                <p class="text-[10px] text-gray-400">Last seen: ${p.last_seen?new Date(p.last_seen).toLocaleString('en-PH'):'Never'}</p>
-            </div>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'bg-green-100 text-green-600':'bg-gray-100 text-gray-400'}">${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'Online':'Offline'}</span>
-        </div>`).join('');
-}
-
-// ── ONBOARDING TRACKER (reads from profiles table) ────────────────────────────
-async function refreshOnboardingTracker() {
-    const el = document.getElementById('admin-onboarding-list'); if (!el) return;
-    el.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
-    const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, onboarding_progress').order('name');
-    if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No onboarding data yet.</p>'; return; }
-    el.innerHTML = profiles.map(p=>{
-        const prog = p.onboarding_progress || {};
-        const tasks = prog.tasks || [];
-        const total = tasks.length || 0;
-        const done  = tasks.filter(t=>t.done||t.completed).length;
-        const pct   = total ? Math.round(done/total*100) : 0;
-        const col = pct>=80?'bg-green-500':pct>=40?'bg-yellow-400':'bg-red-400';
-        const tc  = pct>=80?'text-green-600':pct>=40?'text-yellow-600':'text-red-500';
-        return `<div class="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4">
-            <div class="flex items-center justify-between mb-2">
-                <div><p class="text-sm font-bold text-gray-900">${p.name||p.username} <span class="text-[10px] text-gray-400 uppercase">${p.dept||''}</span></p>
-                <p class="text-xs text-gray-500">${done} / ${total} tasks completed</p></div>
-                <span class="text-sm font-black ${tc}">${pct}%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2"><div class="${col} h-2 rounded-full transition-all" style="width:${pct}%"></div></div>
-        </div>`;
-    }).join('');
-}
-
-function handleMemoFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf') { _memoMsg('error', 'Only PDF files are accepted.'); input.value = ''; return; }
-    if (file.size > 10 * 1024 * 1024) { _memoMsg('error', 'File exceeds 10 MB limit.'); input.value = ''; return; }
-    const nameEl = document.getElementById('memo-file-name');
-    nameEl.textContent = '📎 ' + file.name;
-    nameEl.classList.remove('hidden');
-    _memoMsg('', '');
-}
-
-function submitMemoUpload() {
-    const title = document.getElementById('memo-title').value.trim();
-    const dept  = document.getElementById('memo-dept').value;
-    const desc  = document.getElementById('memo-desc').value.trim();
-    const fileInput = document.getElementById('memo-file-input');
-    const file  = fileInput.files[0];
-    if (!title)  { _memoMsg('error', 'Please enter a memo title.'); return; }
-    if (!dept)   { _memoMsg('error', 'Please select a target department.'); return; }
-    if (!file)   { _memoMsg('error', 'Please select a PDF file to upload.'); return; }
-    _memoMsg('info', 'Reading file…');
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const { error } = await SUPA.from('admin_memos').insert({
-            title, dept, description: desc||null,
-            filename: file.name,
-            data_url: e.target.result,
-            uploaded_by: (window.__brdcUser && window.__brdcUser.name) || 'Admin'
-        });
-        if (error) { _memoMsg('error', 'Upload failed: ' + error.message); return; }
-        _memoMsg('success', '✓ Memo published successfully!');
-        document.getElementById('memo-title').value = '';
-        document.getElementById('memo-dept').value = '';
-        document.getElementById('memo-desc').value = '';
-        fileInput.value = '';
-        document.getElementById('memo-file-name').classList.add('hidden');
-        renderAdminMemos();
-    };
-    reader.onerror = function() { _memoMsg('error', 'Failed to read file. Please try again.'); };
-    reader.readAsDataURL(file);
-}
-
-function _memoMsg(type, text) {
-    const el = document.getElementById('memo-msg');
-    if (!el) return;
-    if (!type || !text) { el.classList.add('hidden'); el.textContent = ''; return; }
-    el.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700', 'bg-blue-50', 'text-blue-700');
-    if (type === 'error')   { el.classList.add('bg-red-50',   'text-red-700'); }
-    if (type === 'success') { el.classList.add('bg-green-50', 'text-green-700'); }
-    if (type === 'info')    { el.classList.add('bg-blue-50',  'text-blue-700'); }
-    el.textContent = text;
-}
-
-async function renderAdminMemos() {
-    const list   = document.getElementById('admin-memos-list');
-    if (!list) return;
-    list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
-    const filter = (document.getElementById('manage-dept-filter') || {}).value || 'all';
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
-    if (filter !== 'all') q = q.or(`dept.eq.${filter},dept.eq.all`);
-    const { data: shown, error } = await q;
-    if (error || !shown || !shown.length) { list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No memos found.</p>'; return; }
-    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
-    list.innerHTML = shown.map(m => {
-        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-        const dLabel = deptLabel[m.dept] || m.dept;
-        return `<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
-            <i class="ph-fill ph-file-pdf text-3xl text-red-400 flex-shrink-0 mt-0.5"></i>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
-                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
-                <div class="flex items-center gap-2 mt-2 flex-wrap">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
-                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
-                </div>
-            </div>
-            <div class="flex gap-2 flex-shrink-0">
-                <a href="${m.data_url}" download="${m.filename}" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-download-simple"></i> Download</a>
-                <button onclick="deleteMemo(${m.id})" class="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-trash"></i> Delete</button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-async function deleteMemo(id) {
-    if (!confirm('Delete this memo? This cannot be undone.')) return;
-    await SUPA.from('admin_memos').delete().eq('id', id);
-    renderAdminMemos();
-    renderDeptMemos(); // keep dashboard in sync
-}
-
-async function renderDeptMemos() {
-    const tile   = document.getElementById('dept-memos-tile');
-    const list   = document.getElementById('dept-memos-list');
-    const badge  = document.getElementById('dept-memos-badge');
-    if (!tile || !list) return;
-    const user = window.__brdcUser;
-    if (!user || !user.dept) { tile.classList.add('hidden'); return; }
-    const userDept = user.dept.toLowerCase();
-    const isAdmin  = user.isAdmin;
-    // Admins see all memos; employees see only their dept + 'all'
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
-    if (!isAdmin) q = q.or(`dept.eq.${userDept},dept.eq.all`);
-    const { data: relevant, error } = await q;
-    if (error || !relevant || !relevant.length) {
-        tile.classList.add('hidden');
-        return;
-    }
-    tile.classList.remove('hidden');
-    // Update badge count
-    if (badge) {
-        badge.textContent = relevant.length;
-        badge.classList.remove('hidden');
-    }
-    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
-    list.innerHTML = relevant.map(m => {
-        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-        const dLabel = deptLabel[m.dept] || m.dept;
-        return `<div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
-            <i class="ph-fill ph-file-pdf text-2xl text-red-400 flex-shrink-0 mt-0.5"></i>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
-                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
-                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
-                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
-                </div>
-            </div>
-            <a href="${m.data_url}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"><i class="ph-fill ph-download-simple"></i> Open</a>
-        </div>`;
-    }).join('');
-}
-
-// ─── CMG ADMIN POSITION SELECTOR ──────────────────────────────────────────────
-window.__applyCmgPositionBadge = function(position) {
-    const existing = document.getElementById('cmg-position-badge');
-    if (existing) existing.remove();
-    const sidebarLabel = document.getElementById('sidebar-dept-label');
-    if (sidebarLabel) {
-        const badge = document.createElement('div');
-        badge.id = 'cmg-position-badge';
-        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
-        badge.textContent = '🏢 ' + position;
-        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
-    }
-};
-window.selectCmgPosition = function(position) {
-    const raw = localStorage.getItem('brdc_portal_session');
-    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
-    if (window.__brdcUser) window.__brdcUser.position = position;
-    const user = window.__brdcUser;
-    if (user && user.username && typeof SUPA !== 'undefined') {
-        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
-    }
-    const posModal = document.getElementById('cmg-position-modal');
-    if (posModal) posModal.classList.add('hidden');
-    window.__applyCmgPositionBadge(position);
-    window.__updateGreetingPosition(position);
-    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
-    if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = document.getElementById('tour-welcome');
-        if (tw) tw.classList.remove('hidden');
-    }
-};
-
-
-// ─── SMARTFUELS POSITION SELECTOR ──────────────────────────────────────────────
-window.__applySmartfuelsPositionBadge = function(position) {
-    const existing = document.getElementById('smartfuels-position-badge');
-    if (existing) existing.remove();
-    const sidebarLabel = document.getElementById('sidebar-dept-label');
-    if (sidebarLabel) {
-        const badge = document.createElement('div');
-        badge.id = 'smartfuels-position-badge';
-        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#c2410c,#f97316);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
-        badge.textContent = '⛽ ' + position;
-        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
-    }
-};
-window.selectSmartfuelsPosition = function(position) {
-    const raw = localStorage.getItem('brdc_portal_session');
-    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
-    if (window.__brdcUser) window.__brdcUser.position = position;
-    const user = window.__brdcUser;
-    if (user && user.username && typeof SUPA !== 'undefined') {
-        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
-    }
-    const posModal = document.getElementById('smartfuels-position-modal');
-    if (posModal) posModal.classList.add('hidden');
-    window.__applySmartfuelsPositionBadge(position);
-    window.__updateGreetingPosition(position);
-    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
-    if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = document.getElementById('tour-welcome');
-        if (tw) tw.classList.remove('hidden');
-    }
-};
-
-</script>
-</body>
-</html>
+        <div class="flex items-center gap-3 bg
