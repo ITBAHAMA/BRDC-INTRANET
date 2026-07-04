@@ -1657,6 +1657,26 @@
         updateEditPositions(document.getElementById('edit-dept').value);
         document.getElementById('edit-position').value = position;
         document.getElementById('edit-newpwd').value = '';
+
+        // Admin toggle
+        const isAdmin = isAdminStr === '1';
+        const chk = document.getElementById('edit-is-admin');
+        const statusSpan = document.getElementById('edit-admin-status');
+        const adminNote = document.getElementById('edit-admin-note');
+        const adminLabel = document.getElementById('edit-admin-label');
+        if (chk) {
+            chk.checked = isAdmin;
+            if (statusSpan) statusSpan.textContent = isAdmin ? 'Admin' : 'Standard User';
+            chk.onchange = function() {
+                if (statusSpan) statusSpan.textContent = this.checked ? 'Admin' : 'Standard User';
+            };
+            // Disable if editing yourself
+            const isSelf = (window.__brdcUser?.username === username);
+            chk.disabled = isSelf;
+            if (adminLabel) adminLabel.style.cursor = isSelf ? 'not-allowed' : 'pointer';
+            if (adminNote) adminNote.classList.toggle('hidden', !isSelf);
+        }
+
         const msg = document.getElementById('edit-msg');
         if (msg) { msg.classList.add('hidden'); msg.textContent = ''; }
         const card = document.getElementById('user-edit-card');
@@ -1687,8 +1707,11 @@
         if (!dept) { showEditMsg('Please select a department.', false); return; }
         if (newPwd && newPwd.length < 6) { showEditMsg('New password must be at least 6 characters.', false); return; }
 
+        const adminChk = document.getElementById('edit-is-admin');
         const updates = { full_name: name, department: dept, position: position || null };
         if (newPwd) updates.password = btoa(newPwd);
+        // Only update is_admin if the toggle wasn't disabled (i.e. not editing yourself)
+        if (adminChk && !adminChk.disabled) updates.is_admin = adminChk.checked;
 
         const { error } = await SUPA.from('profiles').update(updates).eq('username', username);
         if (error) { showEditMsg('Error: ' + error.message, false); return; }
@@ -3141,6 +3164,18 @@
                                 <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">New Password <span class="text-gray-400 font-normal normal-case">(leave blank to keep)</span></label>
                                 <input id="edit-newpwd" type="password" placeholder="Enter new password…"
                                     class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Admin Access</label>
+                                <label id="edit-admin-label" class="inline-flex items-center gap-3 cursor-pointer select-none">
+                                    <div class="relative">
+                                        <input id="edit-is-admin" type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-checked:bg-blue-500 rounded-full transition-colors duration-200 peer-disabled:opacity-50"></div>
+                                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span id="edit-admin-status" class="text-sm font-semibold text-gray-700">Standard User</span>
+                                </label>
+                                <p id="edit-admin-note" class="hidden mt-1 text-xs text-amber-600 font-medium">⚠ You cannot change your own admin access.</p>
                             </div>
                         </div>
                         <div id="edit-msg" class="hidden rounded-xl px-4 py-2.5 text-sm font-medium"></div>
