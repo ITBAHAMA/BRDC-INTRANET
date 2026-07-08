@@ -10375,42 +10375,61 @@ async function initEvalTab() {
 
 async function loadEvalEmployees() {
     const listEl   = document.getElementById('eval-employee-list');
-    const loadingEl= document.getElementById('eval-list-loading');
     const badgeEl  = document.getElementById('eval-count-badge');
     if (!listEl) return;
 
     // Show loading
     listEl.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm"><i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading employees…</div>`;
 
-    // Fetch all employees from birthdays table (has start_date)
-    const { data: bdays, error } = await SUPA.from('birthdays').select('name,dept,start_date');
-    if (error || !bdays) { listEl.innerHTML = `<p class="text-red-400 text-sm text-center py-8">Failed to load employee data.</p>`; return; }
+    // Fetch directory_entries (authoritative list) + birthdays (for tenure) in parallel
+    const [dirRes, bdayRes] = await Promise.all([
+        SUPA.from('directory_entries').select('name,dept,position'),
+        SUPA.from('birthdays').select('name,start_date')
+    ]);
 
-    // Filter: must have start_date and 1+ year tenure
+    if (dirRes.error || !dirRes.data) {
+        listEl.innerHTML = `<p class="text-red-400 text-sm text-center py-8">Failed to load employee data.</p>`;
+        return;
+    }
+
+    // Build tenure map from birthdays (keyed by lowercase name)
     const now = new Date();
-    const eligible = bdays.filter(p => {
-        if (!p.start_date) return false;
-        const yrs = (now - new Date(p.start_date)) / (365.25 * 864e5);
-        return yrs >= 1;
-    }).map(p => {
-        const yrs = Math.floor((now - new Date(p.start_date)) / (365.25 * 864e5));
-        return { name: p.name, dept: p.dept, start_date: p.start_date, years: yrs };
-    }).sort((a,b) => a.name.localeCompare(b.name));
+    const tenureMap = {};
+    (bdayRes.data || []).forEach(b => {
+        if (b.start_date) {
+            const yrs = (now - new Date(b.start_date)) / (365.25 * 864e5);
+            if (yrs >= 0) tenureMap[b.name.toLowerCase()] = Math.floor(yrs);
+        }
+    });
 
-    _evalEmployeeCache = eligible;
+    // Filter out test/dummy entries, map to eval employee objects
+    const TEST_NAMES = /^(asdasd|test|toni is)/i;
+    const employees = dirRes.data
+        .filter(p => p.name && !TEST_NAMES.test(p.name.trim()))
+        .map(p => ({
+            name:     p.name,
+            dept:     p.dept || '',
+            position: p.position || '',
+            years:    tenureMap[p.name.toLowerCase()] ?? null   // null = tenure unknown
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    _evalEmployeeCache = employees;
 
     if (badgeEl) {
-        badgeEl.textContent = eligible.length + ' eligible';
+        badgeEl.textContent = employees.length + ' employees';
         badgeEl.classList.remove('hidden');
     }
 
-    _renderEvalList(eligible);
+    _renderEvalList(employees);
 }
 
 function filterEvalList() {
     const q = (document.getElementById('eval-search')?.value || '').toLowerCase();
     const filtered = _evalEmployeeCache.filter(e =>
-        e.name.toLowerCase().includes(q) || (e.dept||'').toLowerCase().includes(q)
+        e.name.toLowerCase().includes(q) ||
+        (e.dept||'').toLowerCase().includes(q) ||
+        (e.position||'').toLowerCase().includes(q)
     );
     _renderEvalList(filtered);
 }
@@ -10419,30 +10438,51 @@ function _renderEvalList(list) {
     const listEl = document.getElementById('eval-employee-list');
     if (!listEl) return;
     if (list.length === 0) {
-        listEl.innerHTML = `<p class="text-gray-400 text-sm text-center py-8">No eligible employees found.</p>`;
+        listEl.innerHTML = `<p class="text-gray-400 text-sm text-center py-8">No employees found.</p>`;
         return;
     }
-    listEl.innerHTML = list.map(e => `
+    listEl.innerHTML = list.map(e => {
+        const tenureText = e.years !== null ? ` &middot; ${e.years} yr${e.years !== 1 ? 's' : ''}` : '';
+        const subLine    = `${e.position || e.dept || '—'}${tenureText}`;
+        // Use data-* attributes to avoid double-quote collisions in onclick
+        const safeAttr = s => (s ?? '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return `
         <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer"
-             onclick="openEvalForm(${JSON.stringify(e.name)}, ${JSON.stringify(e.dept)}, ${e.years})">
+             data-ename="${safeAttr(e.name)}"
+             data-edept="${safeAttr(e.dept)}"
+             data-eyears="${e.years ?? ''}"
+             data-epos="${safeAttr(e.position)}"
+             onclick="_evalCardClick(this)">
             <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                 <i class="ph-fill ph-user text-emerald-600"></i>
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-gray-900 truncate">${e.name}</p>
-                <p class="text-xs text-gray-500 truncate">${e.dept || '—'} &middot; ${e.years} yr${e.years !== 1 ? 's' : ''}</p>
+                <p class="text-xs text-gray-500 truncate">${subLine}</p>
             </div>
             <span class="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg px-2 py-0.5 font-semibold whitespace-nowrap">Evaluate</span>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
-function openEvalForm(name, dept, years) {
+// Reads data-* attributes from the employee card and calls openEvalForm safely
+function _evalCardClick(el) {
+    const name     = el.dataset.ename || '';
+    const dept     = el.dataset.edept || '';
+    const yearsRaw = el.dataset.eyears;
+    const years    = yearsRaw === '' ? null : parseInt(yearsRaw, 10);
+    const position = el.dataset.epos || '';
+    openEvalForm(name, dept, years, position);
+}
+
+function openEvalForm(name, dept, years, position) {
     // Update the "You are evaluating" header
     const nameEl = document.getElementById('eval-subject-name');
     const metaEl = document.getElementById('eval-subject-meta');
     if (nameEl) nameEl.textContent = name;
-    if (metaEl) metaEl.textContent = `${dept || '—'} · ${years} year${years !== 1 ? 's' : ''} in company`;
+    const roleLabel   = position || dept || '—';
+    const tenureLabel = years !== null && years !== undefined ? ` · ${years} year${years !== 1 ? 's' : ''} in company` : '';
+    if (metaEl) metaEl.textContent = roleLabel + tenureLabel;
 
     // Store for submission — use name as identifier since birthdays table uses name
     document.getElementById('eval-subject-username').value = name;
@@ -10573,7 +10613,7 @@ async function activateBroadcast() {
     const color = document.getElementById('bc-color').value;
     const set_by = (window.__brdcUser||{}).name||'Admin';
     // upsert single row (id=1)
-    const { error } = await SUPA.from('broadcast_alert').upsert({ id:1, msg, color, set_by, set_at: new Date().toISOString() });
+    const { error } = await SUPA.from('broadcast_alert').upsert({ id:1, message: msg, type: color, updated_by: set_by, updated_at: new Date().toISOString(), is_active: true });
     if (error) { alert('Error saving alert: ' + error.message); return; }
     refreshBroadcastStatus(); renderBroadcastBanner();
 }
@@ -10587,8 +10627,8 @@ async function refreshBroadcastStatus() {
     const { data } = await SUPA.from('broadcast_alert').select('*').eq('id',1).maybeSingle();
     if (!data) { el.textContent = 'No active alert.'; el.className = 'rounded-xl px-4 py-3 text-sm font-medium bg-gray-50 border border-gray-200 text-gray-500'; return; }
     const cm = { red:'bg-red-50 border-red-200 text-red-800', orange:'bg-orange-50 border-orange-200 text-orange-800', blue:'bg-blue-50 border-blue-200 text-blue-800', green:'bg-green-50 border-green-200 text-green-800' };
-    el.className = 'rounded-xl px-4 py-3 text-sm font-medium border ' + (cm[data.color]||cm.red);
-    el.innerHTML = `<strong>Active alert:</strong> ${data.msg} <span class="opacity-60 ml-2">— set by ${data.set_by}</span>`;
+    el.className = 'rounded-xl px-4 py-3 text-sm font-medium border ' + (cm[data.type]||cm.red);
+    el.innerHTML = `<strong>Active alert:</strong> ${data.message} <span class="opacity-60 ml-2">— set by ${data.updated_by}</span>`;
 }
 async function renderBroadcastBanner() {
     const ex = document.getElementById('broadcast-banner'); if (ex) ex.remove();
@@ -10596,8 +10636,8 @@ async function renderBroadcastBanner() {
     if (!data) return;
     const cm = { red:'bg-red-600', orange:'bg-orange-500', blue:'bg-blue-600', green:'bg-green-600' };
     const b = document.createElement('div'); b.id = 'broadcast-banner';
-    b.className = `fixed top-0 left-0 right-0 z-[9999] ${cm[data.color]||'bg-red-600'} text-white text-sm font-bold px-4 py-2.5 flex items-center justify-center gap-3 shadow-lg`;
-    b.innerHTML = `<i class="ph-fill ph-broadcast text-lg flex-shrink-0"></i><span class="flex-1 text-center">${data.msg}</span><button onclick="this.parentElement.style.display='none'" class="opacity-70 hover:opacity-100 flex-shrink-0"><i class="ph-fill ph-x text-base"></i></button>`;
+    b.className = `fixed top-0 left-0 right-0 z-[9999] ${cm[data.type]||'bg-red-600'} text-white text-sm font-bold px-4 py-2.5 flex items-center justify-center gap-3 shadow-lg`;
+    b.innerHTML = `<i class="ph-fill ph-broadcast text-lg flex-shrink-0"></i><span class="flex-1 text-center">${data.message}</span><button onclick="this.parentElement.style.display='none'" class="opacity-70 hover:opacity-100 flex-shrink-0"><i class="ph-fill ph-x text-base"></i></button>`;
     document.body.prepend(b);
 }
 
