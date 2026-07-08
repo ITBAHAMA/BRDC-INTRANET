@@ -294,21 +294,28 @@
            PREMIUM AUTH — SPLIT PANEL REDESIGN
         ═══════════════════════════════════════════════════════════════ */
 
-        /* ── Ticker Bar ─────────────────────────────────────────────── */
-        @keyframes tickerScroll {
-            0%   { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        #portal-ticker-bar { display:none; width:100%; background:#1b3a1b; color:#fff; overflow:hidden; flex-shrink:0; height:30px; align-items:center; position:relative; z-index:40; }
-        #portal-ticker-label { background:#2A6E1F; padding:0 13px; height:100%; display:flex; align-items:center; font-size:10.5px; font-weight:800; letter-spacing:0.6px; flex-shrink:0; gap:5px; white-space:nowrap; border-right:2px solid rgba(255,255,255,0.15); }
-        #portal-ticker-track { flex:1; overflow:hidden; position:relative; height:100%; }
-        #portal-ticker-content { display:inline-flex; align-items:center; white-space:nowrap; font-size:12px; font-weight:500; height:100%; animation:tickerScroll 35s linear infinite; will-change:transform; }
-        #portal-ticker-content:hover { animation-play-state:paused; }
-        .ticker-item { padding:0 18px; display:inline-flex; align-items:center; gap:6px; border-right:1px solid rgba(255,255,255,0.12); }
-        .ticker-item .ticker-icon { font-size:13px; }
-        .ticker-item-bday   { color:#f9a8d4; }
-        .ticker-item-alert  { color:#fde68a; }
-        .ticker-item-ann    { color:#a7f3d0; }
+        /* ── Notification Strip ─────────────────────────────────────────── */
+        #notif-strip { display:none; width:100%; background:#fff; border-bottom:1px solid #e5e7eb; flex-shrink:0; align-items:center; padding:0 14px; height:38px; position:relative; z-index:40; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+        #notif-accent { width:4px; height:22px; border-radius:4px; flex-shrink:0; transition:background .25s; }
+        .notif-alert #notif-accent { background:#ef4444; }
+        .notif-bday  #notif-accent { background:#ec4899; }
+        .notif-ann   #notif-accent { background:#10b981; }
+        #notif-icon { font-size:15px; flex-shrink:0; transition:color .25s; }
+        .notif-alert #notif-icon { color:#ef4444; }
+        .notif-bday  #notif-icon { color:#ec4899; }
+        .notif-ann   #notif-icon { color:#10b981; }
+        #notif-label { font-size:9.5px; font-weight:800; letter-spacing:0.7px; padding:2px 7px; border-radius:999px; flex-shrink:0; transition:background .25s,color .25s; }
+        .notif-alert #notif-label { background:#fee2e2; color:#b91c1c; }
+        .notif-bday  #notif-label { background:#fce7f3; color:#be185d; }
+        .notif-ann   #notif-label { background:#d1fae5; color:#065f46; }
+        #notif-text { flex:1; font-size:12.5px; color:#374151; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #notif-nav { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+        .notif-dot { width:6px; height:6px; border-radius:50%; background:#d1d5db; transition:background .2s; flex-shrink:0; }
+        .notif-dot.active { background:#6b7280; }
+        #notif-prev,#notif-next { background:none; border:none; cursor:pointer; color:#9ca3af; font-size:16px; padding:1px 5px; line-height:1; border-radius:4px; }
+        #notif-prev:hover,#notif-next:hover { color:#374151; background:#f3f4f6; }
+        #notif-close { background:none; border:none; cursor:pointer; color:#9ca3af; font-size:17px; line-height:1; padding:2px 5px; border-radius:4px; flex-shrink:0; }
+        #notif-close:hover { color:#374151; background:#f3f4f6; }
 
         /* ── Keyframes ───────────────────────────────────────────────── */
         @keyframes authLeftIn    { from { transform: translateX(-100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
@@ -1623,6 +1630,7 @@
         const pass     = document.getElementById('nu-password').value;
         const isAdmin      = document.getElementById('nu-isadmin').checked;
         const isOnboarding = document.getElementById('nu-onboarding').checked;
+        const hireDate = (document.getElementById('nu-hire-date').value || '').trim();
 
         if (!name)     { showNuMsg('Please enter the full name.', false); return; }
         if (!username) { showNuMsg('Please enter a username.', false); return; }
@@ -1641,6 +1649,13 @@
             security_question: 'pet', security_answer: 'brdc'
         }]);
         if (error) { showNuMsg('Error: ' + error.message, false); return; }
+
+        // Save date of hire to birthdays table (used for tenure & performance eval)
+        if (hireDate) {
+            await SUPA.from('birthdays').insert([{
+                name: name, dept: dept, start_date: hireDate
+            }]);
+        }
 
         showNuMsg('Account created for ' + name + '!', true);
         setTimeout(() => {
@@ -1873,16 +1888,20 @@
 <!-- MAIN WORKSPACE -->
 <main class="flex-1 flex flex-col h-full relative overflow-hidden">
 
-    <!-- ── SCROLLING TICKER BAR ───────────────────────────────────────────── -->
-    <div id="portal-ticker-bar">
-        <div id="portal-ticker-label">
-            <i class="ph-fill ph-megaphone" style="font-size:13px;"></i> UPDATES
+    <!-- ── NOTIFICATION STRIP ────────────────────────────────────────────── -->
+    <div id="notif-strip">
+        <div id="notif-accent"></div>
+        <i id="notif-icon" class="ph-fill ph-bell"></i>
+        <span id="notif-label">INFO</span>
+        <span id="notif-text"></span>
+        <div id="notif-nav">
+            <button id="notif-prev" onclick="_notifPrev()">&#8249;</button>
+            <div id="notif-dots" style="display:flex;gap:4px;align-items:center;"></div>
+            <button id="notif-next" onclick="_notifNext()">&#8250;</button>
         </div>
-        <div id="portal-ticker-track">
-            <div id="portal-ticker-content"></div>
-        </div>
+        <button id="notif-close" onclick="_closeNotifStrip()" title="Dismiss">&#x2715;</button>
     </div>
-    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
 
     <header class="pt-8 pb-4 px-6 md:px-10 flex flex-col md:flex-row justify-between items-start md:items-end z-10 flex-shrink-0">
         <div>
@@ -3048,7 +3067,13 @@
                                 <input id="nu-password" type="password" placeholder="Min. 6 characters"
                                     class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                             </div>
-                            <div class="flex items-center gap-6 pb-1 flex-wrap">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide"><i class="ph-fill ph-calendar-blank mr-1 text-blue-500"></i>Date of Hire</label>
+                                <input id="nu-hire-date" type="date"
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                                <p class="text-xs text-gray-400 mt-1">Used for tenure tracking &amp; performance evaluation eligibility.</p>
+                            </div>
+                            <div class="flex items-center gap-6 pb-1 flex-wrap md:col-span-2">
                                 <label class="flex items-center gap-2 cursor-pointer select-none">
                                     <div class="relative">
                                         <input id="nu-isadmin" type="checkbox" class="sr-only peer">
@@ -8667,89 +8692,122 @@ function _startBroadcastPoll() {
     _broadcastPollTimer = setInterval(loadBroadcastAlert, 30000); // every 30s
 }
 
-// ─── SCROLLING TICKER BAR ────────────────────────────────────────────────────
-let _tickerRefreshTimer = null;
+// ─── NOTIFICATION STRIP ──────────────────────────────────────────────────────
+let _notifItems        = [];
+let _notifIndex        = 0;
+let _notifAutoTimer    = null;
+let _tickerRefreshTimer = null;  // kept for compatibility
+
+const _NOTIF_CFG = {
+    alert: { label:'ALERT', icon:'ph-siren',     cls:'notif-alert' },
+    bday:  { label:'EVENT', icon:'ph-cake',       cls:'notif-bday'  },
+    ann:   { label:'NEWS',  icon:'ph-megaphone',  cls:'notif-ann'   },
+};
+
+function _notifRender(idx) {
+    if (!_notifItems.length) return;
+    _notifIndex = ((idx % _notifItems.length) + _notifItems.length) % _notifItems.length;
+    const item = _notifItems[_notifIndex];
+    const cfg  = _NOTIF_CFG[item.type] || _NOTIF_CFG.ann;
+    const strip = document.getElementById('notif-strip');
+    if (!strip) return;
+    strip.className = cfg.cls;
+    document.getElementById('notif-label').textContent = cfg.label;
+    document.getElementById('notif-icon').className    = 'ph-fill ' + cfg.icon;
+    document.getElementById('notif-text').innerHTML    = item.text;
+    // dots
+    const dotsEl = document.getElementById('notif-dots');
+    if (dotsEl && _notifItems.length > 1) {
+        dotsEl.innerHTML = _notifItems.map((_,i) =>
+            `<span class="notif-dot${i===_notifIndex?' active':''}"></span>`).join('');
+        dotsEl.style.display = 'flex';
+    } else if (dotsEl) { dotsEl.innerHTML = ''; }
+    // show/hide nav if only 1 item
+    const nav = document.getElementById('notif-nav');
+    if (nav) nav.style.display = _notifItems.length > 1 ? 'flex' : 'none';
+}
+
+function _notifNext() { _notifRender(_notifIndex + 1); _notifResetAuto(); }
+function _notifPrev() { _notifRender(_notifIndex - 1); _notifResetAuto(); }
+
+function _notifResetAuto() {
+    if (_notifAutoTimer) clearInterval(_notifAutoTimer);
+    if (_notifItems.length > 1)
+        _notifAutoTimer = setInterval(() => _notifRender(_notifIndex + 1), 6000);
+}
+
+function _closeNotifStrip() {
+    const strip = document.getElementById('notif-strip');
+    if (strip) strip.style.display = 'none';
+    if (_notifAutoTimer) { clearInterval(_notifAutoTimer); _notifAutoTimer = null; }
+}
 
 async function loadTickerBar() {
-    const bar     = document.getElementById('portal-ticker-bar');
-    const content = document.getElementById('portal-ticker-content');
-    if (!bar || !content) return;
+    const strip = document.getElementById('notif-strip');
+    if (!strip) return;
 
-    const today = new Date();
-    const m = today.getMonth() + 1;
-    const d = today.getDate();
+    const today  = new Date();
     const mNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
-    const items = [];
+    _notifItems  = [];
 
-    // ── 1. Broadcast alert ───────────────────────────────────────────────────
+    // 1. Broadcast alert
     try {
         const { data: alert } = await SUPA.from('broadcast_alert').select('*').eq('id', 1).maybeSingle();
-        if (alert && alert.is_active && alert.message) {
-            const icons = { info:'ph-info', success:'ph-check-circle', warning:'ph-warning', danger:'ph-siren' };
-            const icon  = icons[alert.type] || 'ph-megaphone';
-            items.push(`<span class="ticker-item ticker-item-alert"><i class="ph-fill ${icon} ticker-icon"></i>${alert.message}</span>`);
-        }
+        if (alert && alert.is_active && alert.message)
+            _notifItems.push({ type:'alert', text: alert.message });
     } catch(e) {}
 
-    // ── 2. Birthdays & anniversaries — next 31 days ─────────────────────────
+    // 2. Birthdays & anniversaries — next 31 days
     try {
         const { data: supaB } = await SUPA.from('birthdays').select('*');
         const allB = [...(window.TEAM_BIRTHDAYS || []), ...(supaB||[]).filter(p=>p.bday).map(p=>{
             const [bm,bd] = (p.bday||'').split('-').map(Number);
             return { name:p.name, type:'birthday', month:bm, day:bd, dept:p.dept||'' };
         })];
-        allB
-            .map(b => {
-                const bDate = new Date(today.getFullYear(), b.month-1, b.day);
-                if (bDate < today) bDate.setFullYear(today.getFullYear()+1);
-                return { ...b, diff: Math.round((bDate - today) / 864e5) };
-            })
-            .filter(b => b.diff >= 0 && b.diff <= 31)
-            .sort((a, b) => a.diff - b.diff)
-            .forEach(b => {
-                const isBday   = b.type !== 'anniversary';
-                const emoji    = isBday ? '🎂' : '🎉';
-                const icon     = isBday ? 'ph-cake' : 'ph-confetti';
-                const evtLbl   = isBday ? 'Birthday' : 'Work Anniversary';
-                const dept     = b.dept && b.dept !== 'all' ? ` (${b.dept})` : '';
-                const timeStr  = b.diff === 0 ? 'Today!'
-                               : b.diff === 1 ? 'tomorrow'
-                               : `on ${mNames[b.month]} ${b.day}`;
-                const msg = b.diff === 0
-                    ? `${emoji} Happy ${evtLbl}, <strong>${b.name}</strong>${dept}!`
-                    : `${emoji} ${b.name}'s ${evtLbl} is ${timeStr}${dept}`;
-                items.push(`<span class="ticker-item ticker-item-bday"><i class="ph-fill ${icon} ticker-icon"></i>${msg}</span>`);
-            });
-    } catch(e) {}
-
-    // ── 3. Recent / pinned dept announcements ────────────────────────────────
-    try {
-        const { data: anns } = await SUPA.from('dept_announcements')
-            .select('title,dept')
-            .order('pinned', { ascending: false })
-            .order('posted_at', { ascending: false })
-            .limit(5);
-        (anns||[]).forEach(a => {
-            const dept = (a.dept && a.dept !== 'all') ? ` [${a.dept}]` : '';
-            items.push(`<span class="ticker-item ticker-item-ann"><i class="ph-fill ph-megaphone ticker-icon"></i>📢 ${a.title}${dept}</span>`);
+        allB.map(b => {
+            const bDate = new Date(today.getFullYear(), b.month-1, b.day);
+            if (bDate < today) bDate.setFullYear(today.getFullYear()+1);
+            return { ...b, diff: Math.round((bDate - today) / 864e5) };
+        })
+        .filter(b => b.diff >= 0 && b.diff <= 31)
+        .sort((a,b) => a.diff - b.diff)
+        .forEach(b => {
+            const isBday  = b.type !== 'anniversary';
+            const emoji   = isBday ? '🎂' : '🎉';
+            const evtLbl  = isBday ? 'Birthday' : 'Work Anniversary';
+            const dept    = b.dept && b.dept !== 'all' ? ` (${b.dept})` : '';
+            const timeStr = b.diff === 0 ? 'Today!'
+                          : b.diff === 1 ? 'tomorrow'
+                          : `on ${mNames[b.month]} ${b.day}`;
+            const text = b.diff === 0
+                ? `${emoji} Happy ${evtLbl}, <strong>${b.name}</strong>${dept}!`
+                : `${emoji} ${b.name}'s ${evtLbl} is ${timeStr}${dept}`;
+            _notifItems.push({ type:'bday', text });
         });
     } catch(e) {}
 
-    if (!items.length) {
-        bar.style.display = 'none';
-        return;
-    }
+    // 3. Recent / pinned announcements
+    try {
+        const { data: anns } = await SUPA.from('dept_announcements')
+            .select('title,dept')
+            .order('pinned', { ascending:false })
+            .order('posted_at', { ascending:false })
+            .limit(5);
+        (anns||[]).forEach(a => {
+            const dept = (a.dept && a.dept !== 'all') ? ` [${a.dept}]` : '';
+            _notifItems.push({ type:'ann', text:`📢 ${a.title}${dept}` });
+        });
+    } catch(e) {}
 
-    // Duplicate items so the scroll loops seamlessly
-    const html = [...items, ...items].join('');
-    content.innerHTML = html;
+    if (!_notifItems.length) { strip.style.display = 'none'; return; }
 
-    // Adjust speed based on content length
-    const totalChars = items.reduce((s, i) => s + i.replace(/<[^>]+>/g,'').length, 0);
-    const dur = Math.max(20, Math.min(60, totalChars * 0.22));
-    content.style.animationDuration = dur + 's';
+    strip.style.display = 'flex';
+    _notifRender(0);
+    _notifResetAuto();
 
-    bar.style.display = 'flex';
+    // Pause on hover, resume on leave
+    strip.onmouseenter = () => { if (_notifAutoTimer) { clearInterval(_notifAutoTimer); _notifAutoTimer = null; } };
+    strip.onmouseleave = () => _notifResetAuto();
 }
 
 function _startTickerRefresh() {
