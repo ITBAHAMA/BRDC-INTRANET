@@ -10902,4 +10902,33 @@ window.__applySmartfuelsPositionBadge = function(position) {
     const existing = document.getElementById('smartfuels-position-badge');
     if (existing) existing.remove();
     const sidebarLabel = document.getElementById('sidebar-dept-label');
-    if (sideb
+    if (sidebarLabel) {
+        const badge = document.createElement('div');
+        badge.id = 'smartfuels-position-badge';
+        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#c2410c,#f97316);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
+        badge.textContent = '⛽ ' + position;
+        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
+    }
+};
+window.selectSmartfuelsPosition = function(position) {
+    const raw = localStorage.getItem('brdc_portal_session');
+    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
+    if (window.__brdcUser) window.__brdcUser.position = position;
+    const user = window.__brdcUser;
+    if (user && user.username && typeof SUPA !== 'undefined') {
+        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
+    }
+    const posModal = document.getElementById('smartfuels-position-modal');
+    if (posModal) posModal.classList.add('hidden');
+    window.__applySmartfuelsPositionBadge(position);
+    window.__updateGreetingPosition(position);
+    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
+    if (!localStorage.getItem('brdc_portal_tour_done')) {
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+</script>
+</body>
+</html>
