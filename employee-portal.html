@@ -1971,6 +1971,14 @@
     <div id="main-scroll" class="flex-1 overflow-y-auto p-6 md:px-10 pb-20">
         <!-- DASHBOARD -->
         <section id="dashboard" class="portal-section active">
+
+            <!-- ── SUMMARY BAR ─────────────────────────────────────────────── -->
+            <div id="summary-bar" class="hidden items-center gap-2 mb-5 px-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm flex-wrap">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1 flex-shrink-0">At a glance</span>
+                <div id="summary-pills" class="flex items-center gap-2 flex-wrap flex-1"></div>
+                <span class="text-[10px] text-gray-300 hidden sm:block flex-shrink-0">Click to jump</span>
+            </div>
+
             <!-- DEPARTMENT SELECTOR -->
             <!-- DEPARTMENT ANNOUNCEMENTS -->
             <div id="dept-ann-tile" class="bento-tile p-6 mb-6" style="display:none;">
@@ -5894,6 +5902,8 @@ let tourStep = 0;
                     _startTickerRefresh();
                     // ── IT System Status ──────────────────────────────────────
                     loadITStatusTile();
+                    // ── Summary Bar (initial pass; updates again when data loads)
+                    refreshSummaryBar();
                 }, 700);
             }, 400);
         }
@@ -7380,6 +7390,7 @@ function _updateMemoBadge(memos) {
     if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
     if (mobileBadge) { mobileBadge.textContent = unread; mobileBadge.style.display = unread > 0 ? '' : 'none'; }
     if (dot) dot.style.display = unread > 0 ? 'block' : 'none';
+    refreshSummaryBar();
 }
 function _ackMemo(memoId) {
     let ackedMemos = [];
@@ -8579,6 +8590,69 @@ function dismissAnnouncement(id) {
 }
 renderAnnouncements();
 
+// ─── DASHBOARD SUMMARY BAR ───────────────────────────────────────────────────
+function refreshSummaryBar() {
+    const bar   = document.getElementById('summary-bar');
+    const pills = document.getElementById('summary-pills');
+    if (!bar || !pills) return;
+
+    // Only show when logged in
+    if (!window.__brdcUser) { bar.classList.add('hidden'); bar.classList.remove('flex'); return; }
+
+    const today = new Date();
+    const tod = today.getDate(), tom = today.getMonth() + 1;
+
+    // ── 1. Unread memos (from existing badge) ──────────────────────────────
+    const memoBadge  = document.getElementById('memo-badge');
+    const unreadMemos = memoBadge ? (parseInt(memoBadge.textContent) || 0) : 0;
+
+    // ── 2. Birthdays / anniversaries in next 7 days ────────────────────────
+    const allBdays   = window._allBirthdayData || [];
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const bdayCount  = allBdays.filter(b => {
+        const bdDate = new Date(today.getFullYear(), b.month - 1, b.day);
+        if (bdDate < new Date(today.getFullYear(), tom - 1, tod)) {
+            bdDate.setFullYear(today.getFullYear() + 1); // next occurrence
+        }
+        return (bdDate - today) >= 0 && (bdDate - today) < sevenDaysMs;
+    }).length;
+
+    // ── 3. Pending team update acknowledgements ────────────────────────────
+    const pendingAcks = window._pendingAnnCount || 0;
+
+    // ── Build pills ────────────────────────────────────────────────────────
+    const pillDefs = [];
+    if (unreadMemos > 0) pillDefs.push({
+        label: unreadMemos + ' unread memo' + (unreadMemos !== 1 ? 's' : ''),
+        icon:  'ph-megaphone',
+        cls:   'bg-red-50 text-red-600 border-red-200 hover:bg-red-100',
+        onclick: "showSection('memos')"
+    });
+    if (bdayCount > 0) pillDefs.push({
+        label: bdayCount + ' birthday' + (bdayCount !== 1 ? 's' : '') + ' this week',
+        icon:  'ph-cake',
+        cls:   'bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100',
+        onclick: "document.getElementById('birthday-tile')?.scrollIntoView({behavior:'smooth',block:'center'})"
+    });
+    if (pendingAcks > 0) pillDefs.push({
+        label: pendingAcks + ' pending ack' + (pendingAcks !== 1 ? 's' : ''),
+        icon:  'ph-bell',
+        cls:   'bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-100',
+        onclick: "document.getElementById('dept-ann-tile')?.scrollIntoView({behavior:'smooth',block:'center'})"
+    });
+
+    if (!pillDefs.length) {
+        bar.classList.add('hidden'); bar.classList.remove('flex'); return;
+    }
+
+    pills.innerHTML = pillDefs.map(p =>
+        '<button onclick="' + p.onclick.replace(/"/g,"'") + '" class="flex items-center gap-1.5 border text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ' + p.cls + '">' +
+        '<i class="ph-fill ' + p.icon + '"></i>' + p.label + '</button>'
+    ).join('');
+
+    bar.classList.remove('hidden'); bar.classList.add('flex');
+}
+
 // ─── BIRTHDAY & ANNIVERSARY DATA ─────────────────────────────────────────────
 const TEAM_BIRTHDAYS = window.TEAM_BIRTHDAYS = [
     { name: 'Maria Santos',    type: 'birthday',     month: 1,  day: 5,  dept: 'HR', avatar: 'MS' },
@@ -8612,6 +8686,7 @@ async function renderBirthdays() {
         return { name: p.name, type: 'birthday', month: bm, day: bd, dept: p.dept||'', avatar: (p.name||'?')[0], years: yrs||undefined };
     });
     const allBdays = [...TEAM_BIRTHDAYS, ...supaConverted];
+    window._allBirthdayData = allBdays; // used by refreshSummaryBar
 
     const upcoming = allBdays.filter(b => {
         const diff = (b.month - m + 12) % 12;
@@ -8661,6 +8736,7 @@ async function renderBirthdays() {
             '<span class="text-xs font-bold ' + (isToday ? 'text-pink-500' : 'text-gray-500') + ' flex-shrink-0">' + (isToday ? 'Today!' : mNames[b.month] + ' ' + b.day) + '</span>' +
             '</div>';
     }).join('');
+    refreshSummaryBar();
 }
 renderBirthdays();
 
@@ -9573,6 +9649,8 @@ async function loadDeptAnnouncements() {
     const markAllBtn = document.getElementById('dept-ann-mark-all-btn');
     const hasUnacked = data.some(d => !ackedIds.has(d.id));
     if (markAllBtn) markAllBtn.style.display = hasUnacked ? '' : 'none';
+    window._pendingAnnCount = data.filter(d => !ackedIds.has(d.id)).length;
+    refreshSummaryBar();
 
     list.innerHTML = data.map(d => {
         const dt = new Date(d.posted_at);
