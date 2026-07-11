@@ -4178,6 +4178,21 @@
                     <p class="text-gray-500 font-medium">Access restricted. Only Supervisors, Managers, and Admins can conduct evaluations.</p>
                 </div>
 
+                <!-- Tab switcher (HR sees both tabs; others only see Evaluate) -->
+                <div class="flex gap-2 border-b border-gray-200 pb-0" id="eval-tab-bar">
+                    <button id="eval-tab-btn-evaluate" onclick="switchEvalTab('evaluate')"
+                        class="eval-tab-btn px-5 py-2.5 text-sm font-bold rounded-t-xl border border-b-0 border-gray-200 bg-white text-emerald-700 -mb-px z-10">
+                        <i class="ph-fill ph-clipboard-text mr-1.5"></i>Evaluate
+                    </button>
+                    <button id="eval-tab-btn-records" onclick="switchEvalTab('records')"
+                        class="eval-tab-btn hidden px-5 py-2.5 text-sm font-bold rounded-t-xl border border-b-0 border-gray-200 bg-gray-50 text-gray-500 hover:text-emerald-600 -mb-px">
+                        <i class="ph-fill ph-archive mr-1.5"></i>HR Records
+                        <span class="ml-1.5 bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0.5 rounded-full font-bold">HR Only</span>
+                    </button>
+                </div>
+
+                <!-- TAB: Evaluate -->
+                <div id="eval-tab-evaluate">
                 <!-- Main layout: left list + right form -->
                 <div id="eval-main-layout" class="flex flex-col lg:flex-row gap-5">
 
@@ -4293,6 +4308,84 @@
                     </div>
 
                 </div><!-- /eval-main-layout -->
+                </div><!-- /eval-tab-evaluate -->
+
+                <!-- TAB: HR Records (HR dept only) -->
+                <div id="eval-tab-records" class="hidden space-y-4">
+
+                    <!-- Filters row -->
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <input id="hr-rec-search" type="text" placeholder="Search employee or evaluator…"
+                            oninput="filterHrRecords()"
+                            class="flex-1 min-w-[180px] border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+                        <select id="hr-rec-dept" onchange="filterHrRecords()"
+                            class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white text-gray-600">
+                            <option value="">All Departments</option>
+                        </select>
+                        <button onclick="exportHrRecordsCsv()"
+                            class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm">
+                            <i class="ph-fill ph-download-simple"></i> Export CSV
+                        </button>
+                    </div>
+
+                    <!-- Summary cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="hr-rec-summary">
+                        <div class="bento-tile p-4 text-center">
+                            <p class="text-2xl font-black text-emerald-600" id="hr-rec-total">—</p>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Total Evaluations</p>
+                        </div>
+                        <div class="bento-tile p-4 text-center">
+                            <p class="text-2xl font-black text-blue-600" id="hr-rec-employees">—</p>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Employees Evaluated</p>
+                        </div>
+                        <div class="bento-tile p-4 text-center">
+                            <p class="text-2xl font-black text-amber-500" id="hr-rec-avg">—</p>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Avg Overall Rating</p>
+                        </div>
+                        <div class="bento-tile p-4 text-center">
+                            <p class="text-2xl font-black text-purple-600" id="hr-rec-evaluators">—</p>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Active Evaluators</p>
+                        </div>
+                    </div>
+
+                    <!-- Records table -->
+                    <div class="bento-tile overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-100 bg-gray-50">
+                                        <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Employee</th>
+                                        <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Evaluator</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Knowledge</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Quality</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Productivity</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Attendance</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Teamwork</th>
+                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Overall</th>
+                                        <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Date</th>
+                                        <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr-rec-tbody" class="divide-y divide-gray-50">
+                                    <tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">
+                                        <i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading records…
+                                    </td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                            <span class="text-xs text-gray-500" id="hr-rec-page-info">—</span>
+                            <div class="flex gap-2">
+                                <button onclick="hrRecPage(-1)" id="hr-rec-prev"
+                                    class="px-3 py-1.5 text-xs font-bold border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all">← Prev</button>
+                                <button onclick="hrRecPage(1)" id="hr-rec-next"
+                                    class="px-3 py-1.5 text-xs font-bold border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all">Next →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /eval-tab-records -->
+
             </div>
         </section>
         <!-- /PERFORMANCE EVALUATION ─────────────────────────────────────── -->
@@ -10378,13 +10471,32 @@ async function initEvalTab() {
     const canEval = _canDoEvaluation();
     const deniedEl = document.getElementById('eval-access-denied');
     const mainEl   = document.getElementById('eval-main-layout');
+
+    // Show/hide HR Records tab button based on dept
+    const recBtn = document.getElementById('eval-tab-btn-records');
+    if (recBtn) {
+        if (_isHrUser()) recBtn.classList.remove('hidden');
+        else             recBtn.classList.add('hidden');
+    }
+
     if (!canEval) {
+        // HR-only users (non-evaluators) can still see records tab
+        if (_isHrUser()) {
+            if (deniedEl) deniedEl.classList.add('hidden');
+            if (mainEl)   mainEl.classList.add('hidden');
+            // hide Evaluate tab content, go straight to records
+            document.getElementById('eval-tab-evaluate')?.classList.add('hidden');
+            switchEvalTab('records');
+            return;
+        }
         if (deniedEl) deniedEl.classList.remove('hidden');
         if (mainEl)   mainEl.classList.add('hidden');
         return;
     }
     if (deniedEl) deniedEl.classList.add('hidden');
     if (mainEl)   mainEl.classList.remove('hidden');
+    // Reset to Evaluate tab on each nav
+    switchEvalTab('evaluate');
     closeEvalForm();
     await loadEvalEmployees();
 }
@@ -10570,6 +10682,194 @@ async function submitEvaluation() {
     const cmts = document.getElementById('eval-comments');
     if (cmts) cmts.value = '';
     setTimeout(closeEvalForm, 1800);
+}
+
+// ─── HR RECORDS TAB ──────────────────────────────────────────────────────────
+
+let _hrRecAll    = [];   // full dataset from Supabase
+let _hrRecFilt   = [];   // after search/dept filter
+let _hrRecPage   = 1;
+const HR_REC_PER_PAGE = 20;
+
+function _isHrUser() {
+    const u = window.__brdcUser || {};
+    return u.isAdmin || (u.dept || '').toLowerCase().includes('hr');
+}
+
+function switchEvalTab(tab) {
+    const tabs = ['evaluate', 'records'];
+    tabs.forEach(t => {
+        document.getElementById('eval-tab-' + t)?.classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('eval-tab-btn-' + t);
+        if (btn) {
+            if (t === tab) {
+                btn.classList.remove('bg-gray-50','text-gray-500');
+                btn.classList.add('bg-white','text-emerald-700');
+            } else {
+                btn.classList.add('bg-gray-50','text-gray-500');
+                btn.classList.remove('bg-white','text-emerald-700');
+            }
+        }
+    });
+    if (tab === 'records' && _hrRecAll.length === 0) loadHrRecords();
+}
+
+async function loadHrRecords() {
+    const tbody = document.getElementById('hr-rec-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">
+        <i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading records…</td></tr>`;
+
+    // Pull all evaluations + directory for dept lookup
+    const [evalRes, dirRes] = await Promise.all([
+        SUPA.from('performance_evaluations').select('*').order('evaluated_at', { ascending: false }),
+        SUPA.from('directory_entries').select('name,dept')
+    ]);
+
+    if (evalRes.error || !evalRes.data) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-red-400 text-sm">Failed to load evaluation records.</td></tr>`;
+        return;
+    }
+
+    // Build dept map from directory
+    const deptMap = {};
+    (dirRes.data || []).forEach(d => { deptMap[d.name.toLowerCase()] = d.dept || ''; });
+
+    _hrRecAll = evalRes.data.map(r => ({
+        ...r,
+        dept: deptMap[r.employee_name.toLowerCase()] || ''
+    }));
+
+    // Populate dept filter
+    const depts = [...new Set(_hrRecAll.map(r => r.dept).filter(Boolean))].sort();
+    const sel = document.getElementById('hr-rec-dept');
+    if (sel) {
+        sel.innerHTML = '<option value="">All Departments</option>' +
+            depts.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    _hrRecFilt = [..._hrRecAll];
+    _hrRecPage = 1;
+    _renderHrRecords();
+    _renderHrSummary(_hrRecAll);
+}
+
+function filterHrRecords() {
+    const q    = (document.getElementById('hr-rec-search')?.value || '').toLowerCase();
+    const dept = (document.getElementById('hr-rec-dept')?.value  || '');
+    _hrRecFilt = _hrRecAll.filter(r => {
+        const matchQ = !q ||
+            r.employee_name.toLowerCase().includes(q) ||
+            (r.evaluator_name||'').toLowerCase().includes(q);
+        const matchD = !dept || r.dept === dept;
+        return matchQ && matchD;
+    });
+    _hrRecPage = 1;
+    _renderHrRecords();
+    _renderHrSummary(_hrRecFilt);
+}
+
+function hrRecPage(dir) {
+    const maxPage = Math.ceil(_hrRecFilt.length / HR_REC_PER_PAGE) || 1;
+    _hrRecPage = Math.min(maxPage, Math.max(1, _hrRecPage + dir));
+    _renderHrRecords();
+}
+
+function _ratingBadge(val) {
+    if (!val) return '<span class="text-gray-300">—</span>';
+    const v = parseFloat(val);
+    const color = v >= 4.5 ? 'emerald' : v >= 3.5 ? 'blue' : v >= 2.5 ? 'amber' : 'red';
+    return `<span class="inline-block w-9 text-center font-black text-${color}-600">${v.toFixed(1)}</span>`;
+}
+
+function _renderHrRecords() {
+    const tbody = document.getElementById('hr-rec-tbody');
+    const pageInfo = document.getElementById('hr-rec-page-info');
+    if (!tbody) return;
+
+    const total   = _hrRecFilt.length;
+    const maxPage = Math.ceil(total / HR_REC_PER_PAGE) || 1;
+    _hrRecPage    = Math.min(maxPage, Math.max(1, _hrRecPage));
+
+    const start = (_hrRecPage - 1) * HR_REC_PER_PAGE;
+    const slice = _hrRecFilt.slice(start, start + HR_REC_PER_PAGE);
+
+    if (slice.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">No evaluations found.</td></tr>`;
+        if (pageInfo) pageInfo.textContent = '0 records';
+        return;
+    }
+
+    tbody.innerHTML = slice.map(r => {
+        const dateStr = r.evaluated_at
+            ? new Date(r.evaluated_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' })
+            : '—';
+        const overall = parseFloat(r.overall_rating);
+        const overallColor = overall >= 4.5 ? 'emerald' : overall >= 3.5 ? 'blue' : overall >= 2.5 ? 'amber' : 'red';
+        const comments = r.comments
+            ? `<span class="block max-w-[160px] truncate text-gray-500" title="${r.comments.replace(/"/g,'&quot;')}">${r.comments}</span>`
+            : '<span class="text-gray-300">—</span>';
+        return `<tr class="hover:bg-emerald-50 transition-colors">
+            <td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
+                <div>${r.employee_name}</div>
+                <div class="text-xs text-gray-400">${r.dept || ''}</div>
+            </td>
+            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">${r.evaluator_name || '—'}</td>
+            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_knowledge)}</td>
+            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_quality)}</td>
+            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_productivity)}</td>
+            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_attendance)}</td>
+            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_teamwork)}</td>
+            <td class="px-3 py-3 text-center">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-black bg-${overallColor}-100 text-${overallColor}-700">
+                    ${overall.toFixed(2)}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">${dateStr}</td>
+            <td class="px-4 py-3">${comments}</td>
+        </tr>`;
+    }).join('');
+
+    if (pageInfo) pageInfo.textContent = `Showing ${start+1}–${Math.min(start+HR_REC_PER_PAGE, total)} of ${total}`;
+
+    const prevBtn = document.getElementById('hr-rec-prev');
+    const nextBtn = document.getElementById('hr-rec-next');
+    if (prevBtn) prevBtn.disabled = _hrRecPage <= 1;
+    if (nextBtn) nextBtn.disabled = _hrRecPage >= maxPage;
+}
+
+function _renderHrSummary(data) {
+    const totalEl = document.getElementById('hr-rec-total');
+    const empEl   = document.getElementById('hr-rec-employees');
+    const avgEl   = document.getElementById('hr-rec-avg');
+    const evalEl  = document.getElementById('hr-rec-evaluators');
+    if (totalEl) totalEl.textContent = data.length;
+    if (empEl)   empEl.textContent   = new Set(data.map(r => r.employee_name)).size;
+    if (avgEl) {
+        const ratings = data.map(r => parseFloat(r.overall_rating)).filter(v => !isNaN(v));
+        avgEl.textContent = ratings.length
+            ? (ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(2)
+            : '—';
+    }
+    if (evalEl) evalEl.textContent = new Set(data.map(r => r.evaluator_name).filter(Boolean)).size;
+}
+
+function exportHrRecordsCsv() {
+    if (!_hrRecFilt.length) return;
+    const headers = ['Employee','Department','Evaluator','Knowledge','Quality','Productivity','Attendance','Teamwork','Overall','Date','Comments'];
+    const rows = _hrRecFilt.map(r => [
+        r.employee_name, r.dept || '', r.evaluator_name || '',
+        r.rating_knowledge, r.rating_quality, r.rating_productivity,
+        r.rating_attendance, r.rating_teamwork,
+        parseFloat(r.overall_rating).toFixed(2),
+        r.evaluated_at ? new Date(r.evaluated_at).toLocaleDateString('en-PH') : '',
+        (r.comments || '').replace(/,/g,'；')
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'eval_records_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
 }
 
 function showEvalMsg(text, ok) {
@@ -10805,264 +11105,4 @@ async function renderAdminLinks() {
     el.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">Loading…</p>';
     const filter = (document.getElementById('lnk-filter')||{}).value||'all';
     let q = SUPA.from('quick_links').select('*').order('created_at');
-    if (filter!=='all') q = q.or(`dept.eq.${filter},dept.eq.all`);
-    const { data: list, error } = await q;
-    if (error || !list || !list.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-4">No custom links yet.</p>'; return; }
-    el.innerHTML = list.map(l=>`
-        <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
-            <i class="${l.icon||'ph-fill ph-link'} text-green-600 text-lg flex-shrink-0"></i>
-            <div class="flex-1 min-w-0"><p class="text-sm font-bold text-gray-900">${l.label}</p>
-            <p class="text-xs text-gray-400 truncate">${l.url} · <span class="uppercase">${l.dept}</span></p></div>
-            <button onclick="deleteQuickLink(${l.id})" class="text-red-400 hover:text-red-600 p-1"><i class="ph-fill ph-trash text-sm"></i></button>
-        </div>`).join('');
-}
-async function deleteQuickLink(id) {
-    if (!confirm('Remove this link?')) return;
-    await SUPA.from('quick_links').delete().eq('id', id);
-    renderAdminLinks();
-    if (window.__brdcUser) renderQuickLinks(window.__brdcUser.dept);
-}
-
-// ── ACTIVITY LOG (reads from profiles table last_seen) ────────────────────────
-async function refreshActivityLog() {
-    const el = document.getElementById('admin-activity-log'); if (!el) return;
-    el.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
-    const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, last_login, last_seen').order('last_seen', { ascending: false, nullsFirst: false });
-    if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No activity recorded yet.</p>'; return; }
-    el.innerHTML = profiles.map(p=>`
-        <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5">
-            <div class="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand-green font-bold text-xs flex-shrink-0">${(p.name||p.username||'?')[0]}</div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-800">${p.name||p.username} <span class="font-normal text-gray-400 uppercase text-[10px]">${p.dept||''}</span></p>
-                <p class="text-[10px] text-gray-400">Last seen: ${p.last_seen?new Date(p.last_seen).toLocaleString('en-PH'):'Never'}</p>
-            </div>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'bg-green-100 text-green-600':'bg-gray-100 text-gray-400'}">${p.last_seen && (new Date()-new Date(p.last_seen))<300000?'Online':'Offline'}</span>
-        </div>`).join('');
-}
-
-// ── ONBOARDING TRACKER (reads from profiles table) ────────────────────────────
-async function refreshOnboardingTracker() {
-    const el = document.getElementById('admin-onboarding-list'); if (!el) return;
-    el.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
-    const { data: profiles, error } = await SUPA.from('profiles').select('username, name, dept, onboarding_progress').order('name');
-    if (error || !profiles || !profiles.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-6">No onboarding data yet.</p>'; return; }
-    el.innerHTML = profiles.map(p=>{
-        const prog = p.onboarding_progress || {};
-        const tasks = prog.tasks || [];
-        const total = tasks.length || 0;
-        const done  = tasks.filter(t=>t.done||t.completed).length;
-        const pct   = total ? Math.round(done/total*100) : 0;
-        const col = pct>=80?'bg-green-500':pct>=40?'bg-yellow-400':'bg-red-400';
-        const tc  = pct>=80?'text-green-600':pct>=40?'text-yellow-600':'text-red-500';
-        return `<div class="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4">
-            <div class="flex items-center justify-between mb-2">
-                <div><p class="text-sm font-bold text-gray-900">${p.name||p.username} <span class="text-[10px] text-gray-400 uppercase">${p.dept||''}</span></p>
-                <p class="text-xs text-gray-500">${done} / ${total} tasks completed</p></div>
-                <span class="text-sm font-black ${tc}">${pct}%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2"><div class="${col} h-2 rounded-full transition-all" style="width:${pct}%"></div></div>
-        </div>`;
-    }).join('');
-}
-
-function handleMemoFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf') { _memoMsg('error', 'Only PDF files are accepted.'); input.value = ''; return; }
-    if (file.size > 10 * 1024 * 1024) { _memoMsg('error', 'File exceeds 10 MB limit.'); input.value = ''; return; }
-    const nameEl = document.getElementById('memo-file-name');
-    nameEl.textContent = '📎 ' + file.name;
-    nameEl.classList.remove('hidden');
-    _memoMsg('', '');
-}
-
-function submitMemoUpload() {
-    const title = document.getElementById('memo-title').value.trim();
-    const dept  = document.getElementById('memo-dept').value;
-    const desc  = document.getElementById('memo-desc').value.trim();
-    const fileInput = document.getElementById('memo-file-input');
-    const file  = fileInput.files[0];
-    if (!title)  { _memoMsg('error', 'Please enter a memo title.'); return; }
-    if (!dept)   { _memoMsg('error', 'Please select a target department.'); return; }
-    if (!file)   { _memoMsg('error', 'Please select a PDF file to upload.'); return; }
-    _memoMsg('info', 'Reading file…');
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const { error } = await SUPA.from('admin_memos').insert({
-            title, dept, description: desc||null,
-            filename: file.name,
-            data_url: e.target.result,
-            uploaded_by: (window.__brdcUser && window.__brdcUser.name) || 'Admin'
-        });
-        if (error) { _memoMsg('error', 'Upload failed: ' + error.message); return; }
-        _memoMsg('success', '✓ Memo published successfully!');
-        document.getElementById('memo-title').value = '';
-        document.getElementById('memo-dept').value = '';
-        document.getElementById('memo-desc').value = '';
-        fileInput.value = '';
-        document.getElementById('memo-file-name').classList.add('hidden');
-        renderAdminMemos();
-    };
-    reader.onerror = function() { _memoMsg('error', 'Failed to read file. Please try again.'); };
-    reader.readAsDataURL(file);
-}
-
-function _memoMsg(type, text) {
-    const el = document.getElementById('memo-msg');
-    if (!el) return;
-    if (!type || !text) { el.classList.add('hidden'); el.textContent = ''; return; }
-    el.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700', 'bg-blue-50', 'text-blue-700');
-    if (type === 'error')   { el.classList.add('bg-red-50',   'text-red-700'); }
-    if (type === 'success') { el.classList.add('bg-green-50', 'text-green-700'); }
-    if (type === 'info')    { el.classList.add('bg-blue-50',  'text-blue-700'); }
-    el.textContent = text;
-}
-
-async function renderAdminMemos() {
-    const list   = document.getElementById('admin-memos-list');
-    if (!list) return;
-    list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
-    const filter = (document.getElementById('manage-dept-filter') || {}).value || 'all';
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
-    if (filter !== 'all') q = q.or(`dept.eq.${filter},dept.eq.all`);
-    const { data: shown, error } = await q;
-    if (error || !shown || !shown.length) { list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No memos found.</p>'; return; }
-    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
-    list.innerHTML = shown.map(m => {
-        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-        const dLabel = deptLabel[m.dept] || m.dept;
-        return `<div class="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
-            <i class="ph-fill ph-file-pdf text-3xl text-red-400 flex-shrink-0 mt-0.5"></i>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
-                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
-                <div class="flex items-center gap-2 mt-2 flex-wrap">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
-                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
-                </div>
-            </div>
-            <div class="flex gap-2 flex-shrink-0">
-                <a href="${m.data_url}" download="${m.filename}" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-download-simple"></i> Download</a>
-                <button onclick="deleteMemo(${m.id})" class="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-trash"></i> Delete</button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-async function deleteMemo(id) {
-    if (!confirm('Delete this memo? This cannot be undone.')) return;
-    await SUPA.from('admin_memos').delete().eq('id', id);
-    renderAdminMemos();
-    renderDeptMemos(); // keep dashboard in sync
-}
-
-async function renderDeptMemos() {
-    const tile   = document.getElementById('dept-memos-tile');
-    const list   = document.getElementById('dept-memos-list');
-    const badge  = document.getElementById('dept-memos-badge');
-    if (!tile || !list) return;
-    const user = window.__brdcUser;
-    if (!user || !user.dept) { tile.classList.add('hidden'); return; }
-    const userDept = user.dept.toLowerCase();
-    const isAdmin  = user.isAdmin;
-    // Admins see all memos; employees see only their dept + 'all'
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
-    if (!isAdmin) q = q.or(`dept.eq.${userDept},dept.eq.all`);
-    const { data: relevant, error } = await q;
-    if (error || !relevant || !relevant.length) {
-        tile.classList.add('hidden');
-        return;
-    }
-    tile.classList.remove('hidden');
-    // Update badge count
-    if (badge) {
-        badge.textContent = relevant.length;
-        badge.classList.remove('hidden');
-    }
-    const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
-    list.innerHTML = relevant.map(m => {
-        const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-        const dLabel = deptLabel[m.dept] || m.dept;
-        return `<div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white transition-all">
-            <i class="ph-fill ph-file-pdf text-2xl text-red-400 flex-shrink-0 mt-0.5"></i>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-gray-900 text-sm truncate">${m.title}</p>
-                <p class="text-xs text-gray-500 mt-0.5 truncate">${m.filename}${m.description ? ' — ' + m.description : ''}</p>
-                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 uppercase tracking-wide">${dLabel}</span>
-                    <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
-                </div>
-            </div>
-            <a href="${m.data_url}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"><i class="ph-fill ph-download-simple"></i> Open</a>
-        </div>`;
-    }).join('');
-}
-
-// ─── CMG ADMIN POSITION SELECTOR ──────────────────────────────────────────────
-window.__applyCmgPositionBadge = function(position) {
-    const existing = document.getElementById('cmg-position-badge');
-    if (existing) existing.remove();
-    const sidebarLabel = document.getElementById('sidebar-dept-label');
-    if (sidebarLabel) {
-        const badge = document.createElement('div');
-        badge.id = 'cmg-position-badge';
-        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
-        badge.textContent = '🏢 ' + position;
-        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
-    }
-};
-window.selectCmgPosition = function(position) {
-    const raw = localStorage.getItem('brdc_portal_session');
-    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
-    if (window.__brdcUser) window.__brdcUser.position = position;
-    const user = window.__brdcUser;
-    if (user && user.username && typeof SUPA !== 'undefined') {
-        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
-    }
-    const posModal = document.getElementById('cmg-position-modal');
-    if (posModal) posModal.classList.add('hidden');
-    window.__applyCmgPositionBadge(position);
-    window.__updateGreetingPosition(position);
-    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
-    if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = document.getElementById('tour-welcome');
-        if (tw) tw.classList.remove('hidden');
-    }
-};
-
-
-// ─── SMARTFUELS POSITION SELECTOR ──────────────────────────────────────────────
-window.__applySmartfuelsPositionBadge = function(position) {
-    const existing = document.getElementById('smartfuels-position-badge');
-    if (existing) existing.remove();
-    const sidebarLabel = document.getElementById('sidebar-dept-label');
-    if (sidebarLabel) {
-        const badge = document.createElement('div');
-        badge.id = 'smartfuels-position-badge';
-        badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#c2410c,#f97316);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
-        badge.textContent = '⛽ ' + position;
-        sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
-    }
-};
-window.selectSmartfuelsPosition = function(position) {
-    const raw = localStorage.getItem('brdc_portal_session');
-    if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
-    if (window.__brdcUser) window.__brdcUser.position = position;
-    const user = window.__brdcUser;
-    if (user && user.username && typeof SUPA !== 'undefined') {
-        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
-    }
-    const posModal = document.getElementById('smartfuels-position-modal');
-    if (posModal) posModal.classList.add('hidden');
-    window.__applySmartfuelsPositionBadge(position);
-    window.__updateGreetingPosition(position);
-    if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
-    if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = document.getElementById('tour-welcome');
-        if (tw) tw.classList.remove('hidden');
-    }
-};
-
-</script>
-</body>
-</html>
+    if (filter!=='all') q = q.or(`dept.eq.${
