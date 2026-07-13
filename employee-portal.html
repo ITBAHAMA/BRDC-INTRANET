@@ -1379,8 +1379,9 @@
                 // Query ONLY this department at the DB level (case-insensitive)
                 const { data: deptData, error } = await SUPA
                     .from('profiles')
-                    .select('is_admin, position')
-                    .ilike('department', myDept);
+                    .select('full_name, username, position, is_admin')
+                    .ilike('department', myDept)
+                    .order('full_name');
                 if (error) throw error;
 
                 const deptTotal   = deptData.length;
@@ -1394,6 +1395,10 @@
                     exelhaul:'Exelhaul', laferme:'La Ferme', toilena:'Toilena'
                 };
                 const deptLabel = DEPT_LABELS[myDept] || myDept.toUpperCase();
+
+                // Store employees for the modal
+                window.__mgmtDeptEmployees = deptData;
+                window.__mgmtDeptLabel     = deptLabel;
 
                 // Update stat cards
                 const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -1464,6 +1469,69 @@
                 console.error('loadMgmtStats error', e);
             }
         };
+
+        // ── Dept Employee List Modal ────────────────────────────────────────
+        window.showMgmtEmployeeList = function() {
+            const employees = window.__mgmtDeptEmployees || [];
+            const deptLabel = window.__mgmtDeptLabel || 'Department';
+            const modal     = document.getElementById('mgmt-emp-modal');
+            const titleEl   = document.getElementById('mgmt-emp-modal-title');
+            const subEl     = document.getElementById('mgmt-emp-modal-sub');
+            const searchEl  = document.getElementById('mgmt-emp-search');
+            if (!modal) return;
+
+            if (titleEl) titleEl.textContent = deptLabel + ' — All Employees';
+            if (subEl)   subEl.textContent   = employees.length + ' member' + (employees.length !== 1 ? 's' : '');
+            if (searchEl) searchEl.value = '';
+
+            _renderMgmtEmpList(employees);
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeMgmtEmpModal = function() {
+            const modal = document.getElementById('mgmt-emp-modal');
+            if (modal) modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        window.filterMgmtEmpList = function() {
+            const q   = (document.getElementById('mgmt-emp-search')?.value || '').toLowerCase();
+            const all = window.__mgmtDeptEmployees || [];
+            const filtered = q
+                ? all.filter(e => (e.full_name||'').toLowerCase().includes(q) || (e.position||'').toLowerCase().includes(q))
+                : all;
+            _renderMgmtEmpList(filtered);
+        };
+
+        function _renderMgmtEmpList(employees) {
+            const listEl = document.getElementById('mgmt-emp-list');
+            if (!listEl) return;
+            if (!employees.length) {
+                listEl.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">No employees found.</p>';
+                return;
+            }
+            listEl.innerHTML = employees.map((emp, i) => {
+                const name     = (emp.full_name || emp.username || 'Unknown').replace(/</g,'&lt;');
+                const pos      = (emp.position  || 'Unassigned').replace(/</g,'&lt;');
+                const initials = name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+                const colors   = ['bg-blue-100 text-blue-600','bg-indigo-100 text-indigo-600','bg-green-100 text-green-600',
+                                  'bg-purple-100 text-purple-600','bg-amber-100 text-amber-600','bg-pink-100 text-pink-600',
+                                  'bg-teal-100 text-teal-600','bg-red-100 text-red-600'];
+                const clr      = colors[i % colors.length];
+                const badge    = emp.is_admin
+                    ? '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-full">Admin</span>'
+                    : '';
+                return `<div class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${clr}">${initials}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 truncate">${name}</p>
+                        <p class="text-xs text-gray-400 truncate">${pos}</p>
+                    </div>
+                    ${badge}
+                </div>`;
+            }).join('');
+        }
 
 
         const DEPT_POSITIONS = {
@@ -2900,12 +2968,12 @@
 
                     <!-- Stats row -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bento-tile p-5 flex flex-col items-center gap-2 text-center">
-                            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <div class="bento-tile p-5 flex flex-col items-center gap-2 text-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group" onclick="showMgmtEmployeeList()" title="Click to view all dept employees">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                                 <i class="ph-fill ph-users text-xl text-blue-600"></i>
                             </div>
                             <p id="mgmt-stat-total" class="text-2xl font-extrabold text-gray-900">—</p>
-                            <p id="mgmt-label-total" class="text-xs text-gray-500 font-medium">Dept. Employees</p>
+                            <p id="mgmt-label-total" class="text-xs text-blue-500 font-medium flex items-center gap-1">Dept. Employees <i class="ph ph-caret-right text-[10px]"></i></p>
                         </div>
                         <div class="bento-tile p-5 flex flex-col items-center gap-2 text-center">
                             <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
@@ -2948,6 +3016,37 @@
                         <div id="mgmt-dept-breakdown" class="space-y-2">
                             <p class="text-sm text-gray-400 text-center py-4">Loading…</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ── Dept Employee List Modal ──────────────────────────────── -->
+                <div id="mgmt-emp-modal" class="fixed inset-0 z-[999] flex items-center justify-center p-4 hidden" onclick="if(event.target===this)closeMgmtEmpModal()">
+                    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                                    <i class="ph-fill ph-users text-lg text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-sm" id="mgmt-emp-modal-title">Department Employees</h3>
+                                    <p class="text-[11px] text-gray-400" id="mgmt-emp-modal-sub">Loading…</p>
+                                </div>
+                            </div>
+                            <button onclick="closeMgmtEmpModal()" class="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-1.5 transition-colors">
+                                <i class="ph-bold ph-x text-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Search -->
+                        <div class="px-5 py-3 border-b border-gray-100 flex-shrink-0">
+                            <div class="relative">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input id="mgmt-emp-search" type="text" placeholder="Search by name or position…" oninput="filterMgmtEmpList()" class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all">
+                            </div>
+                        </div>
+                        <!-- List -->
+                        <div id="mgmt-emp-list" class="flex-1 overflow-y-auto divide-y divide-gray-50 px-2 py-1"></div>
                     </div>
                 </div>
 
@@ -9785,11 +9884,13 @@ async function loadDeptAnnouncements() {
             : `<button onclick="acknowledgeAnnouncement(${d.id}, this)" class="flex items-center gap-1 text-[10px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-lg transition-colors mt-2">
                 <i class="ph-fill ph-check"></i> Acknowledge
                </button>`;
+        const postedBy = d.posted_by ? `<span class="flex items-center gap-1"><i class="ph-fill ph-user-circle text-gray-400"></i>${d.posted_by}</span>` : '';
         return `<div class="da-item ${pinClass}" id="da-ann-${d.id}">
             <div class="flex items-start justify-between gap-2 mb-1">
                 <div class="flex items-center flex-wrap gap-1.5">${pinIcon}${priBadge}<p class="text-sm font-bold text-gray-800">${(d.title||'').replace(/</g,'&lt;')}</p></div>
                 <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">${dateStr}</span>
             </div>
+            ${postedBy ? `<p class="text-[10px] text-gray-400 mb-1 flex items-center gap-1">${postedBy}</p>` : ''}
             <p class="text-xs text-gray-600 leading-relaxed">${(d.body||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
             <div class="flex items-center gap-2 flex-wrap">
                 ${d.dept && d.dept !== 'all' ? `<span class="inline-block mt-1.5 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-sky-100 text-sky-600 rounded-full">${d.dept}</span>` : ''}
