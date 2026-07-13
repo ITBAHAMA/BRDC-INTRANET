@@ -11507,6 +11507,146 @@ window.selectSmartfuelsPosition = function(position) {
     }
 };
 
+
+// ── Dashboard Widgets ─────────────────────────────────────────────────────────
+// Reveals hidden tiles (completion ring, quick links, activity feed) and
+// populates them whenever a department is selected.
+window._renderDashboardWidgets = function(dept) {
+    const data = DEPT_DATA[dept];
+    if (!data) return;
+
+    // Show the three tiles that depend on dept selection
+    const completionTile = document.getElementById('completion-tile');
+    const quickLinksTile = document.getElementById('quick-links-tile');
+    const activityTile   = document.getElementById('activity-tile');
+    if (completionTile) completionTile.style.display = '';
+    if (quickLinksTile) quickLinksTile.style.display = '';
+    if (activityTile)   activityTile.style.display   = '';
+
+    // Quick Links — populate from dept contacts (email mailto links)
+    const linksList = document.getElementById('quick-links-list');
+    if (linksList) {
+        const contacts = data.contacts || [];
+        if (contacts.length) {
+            linksList.innerHTML = contacts.map(c =>
+                `<a href="mailto:${c.email || ''}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-yellow-50 border border-transparent hover:border-yellow-200 transition-all group">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${c.color || 'bg-gray-100 text-gray-500'}">${c.initials || '?'}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-gray-700 truncate">${c.name || ''}</p>
+                        <p class="text-[10px] text-gray-400 truncate">${c.role || ''}</p>
+                    </div>
+                    <i class="ph ph-envelope text-gray-300 group-hover:text-yellow-500 transition-colors text-sm"></i>
+                </a>`
+            ).join('');
+        } else {
+            linksList.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No contacts configured.</p>';
+        }
+    }
+
+    // Activity feed — show placeholder if empty
+    const feed = document.getElementById('activity-feed');
+    if (feed && !feed.children.length) {
+        feed.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No recent activity yet.</p>';
+    }
+
+    // Update the completion ring for the newly selected dept
+    renderCompletionRing();
+};
+
+// ── Completion Ring ───────────────────────────────────────────────────────────
+// Calculates onboarding progress (todos + tutorials) and animates the SVG ring.
+window.renderCompletionRing = function() {
+    const dept = window.currentDept || '';
+    const data = DEPT_DATA[dept];
+    if (!data) return;
+
+    // Todos
+    const todos    = data.todos || [];
+    let   todoDone = 0;
+    todos.forEach(function(todo, i) {
+        var key   = dept + '_todo_' + i;
+        var isDone = (todoStates[key] !== undefined) ? todoStates[key] : todo.done;
+        if (isDone) todoDone++;
+    });
+    const todoTotal = todos.length;
+
+    // Tutorials
+    const tutorials = data.tutorials || [];
+    const tutDone   = tutorials.filter(function(t) { return t.status === 'completed'; }).length;
+    const tutTotal  = tutorials.length;
+
+    // Weighted percentage: todos 50% + tutorials 50%
+    // If no tutorials exist, todos = 100%
+    var pct = 0;
+    if (todoTotal > 0 && tutTotal > 0) {
+        pct = ((todoDone / todoTotal) * 50) + ((tutDone / tutTotal) * 50);
+    } else if (todoTotal > 0) {
+        pct = (todoDone / todoTotal) * 100;
+    } else if (tutTotal > 0) {
+        pct = (tutDone / tutTotal) * 100;
+    }
+    pct = Math.round(pct);
+
+    // Update DOM
+    const ring    = document.getElementById('completion-ring');
+    const pctEl   = document.getElementById('completion-pct');
+    const tasksEl = document.getElementById('completion-tasks');
+    const tutsEl  = document.getElementById('completion-tuts');
+    const checksEl = document.getElementById('completion-checks');
+
+    // stroke-dasharray is 251.2 (circumference for r=40)
+    if (ring)    ring.style.strokeDashoffset = String(251.2 - (251.2 * pct / 100));
+    if (pctEl)   pctEl.textContent  = pct + '%';
+    if (tasksEl) tasksEl.textContent = todoDone + '/' + todoTotal;
+    if (tutsEl)  tutsEl.textContent  = tutTotal ? (tutDone + '/' + tutTotal) : '—';
+    if (checksEl) checksEl.textContent = todoDone + '/' + todoTotal;
+
+    // Ensure tile is visible
+    const tile = document.getElementById('completion-tile');
+    if (tile) tile.style.display = '';
+};
+
+// ── Activity Feed ─────────────────────────────────────────────────────────────
+// Logs timestamped entries into the activity tile.
+// Usage: logActivity('ph-check-circle', 'green', 'Completed task: ...')
+var _activityLog = [];
+window.logActivity = function(icon, color, text) {
+    var feed = document.getElementById('activity-feed');
+    if (!feed) return;
+
+    // Show the tile
+    var tile = document.getElementById('activity-tile');
+    if (tile) tile.style.display = '';
+
+    var colorMap = {
+        green:  'text-green-500',
+        blue:   'text-blue-500',
+        orange: 'text-orange-500',
+        gray:   'text-gray-400',
+        red:    'text-red-500',
+        violet: 'text-violet-500',
+        pink:   'text-pink-500',
+        yellow: 'text-yellow-500'
+    };
+    var now = new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+    _activityLog.unshift({ icon: icon, color: color, text: text, time: now });
+    if (_activityLog.length > 10) _activityLog.length = 10;
+
+    feed.innerHTML = _activityLog.map(function(e) {
+        return '<div class="flex items-start gap-2.5 py-2 border-b border-gray-50 last:border-0">' +
+            '<i class="ph-fill ' + e.icon + ' ' + (colorMap[e.color] || 'text-gray-400') + ' text-base mt-0.5 flex-shrink-0"></i>' +
+            '<div class="flex-1 min-w-0"><p class="text-xs text-gray-700 leading-snug">' + e.text + '</p></div>' +
+            '<span class="text-[10px] text-gray-400 flex-shrink-0 mt-0.5">' + e.time + '</span>' +
+            '</div>';
+    }).join('');
+};
+
+window.clearActivity = function() {
+    _activityLog.length = 0;
+    var feed = document.getElementById('activity-feed');
+    if (feed) feed.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No recent activity yet.</p>';
+};
+
 </script>
 </body>
 </html>
