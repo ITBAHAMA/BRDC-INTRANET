@@ -1480,14 +1480,13 @@
                      'Admin Assistant','Admin Staff'],
         smartfuels: ['Station Manager','Assistant Station Manager',
                      'Cashier','Pump Attendant','Station Staff'],
-        neobros:    ['Branch Manager','Assistant Branch Manager',
-                     'Sales Supervisor','Sales Associate','Store Staff'],
+        neobros:    ['Sales and Operation Manager','Admin Assistant','Pump Technician'],
         panpacific: ['Hotel Manager','Assistant Hotel Manager','Front Desk Officer',
                      'Housekeeping Supervisor','Housekeeping Staff','Food & Beverage Staff'],
         uhotels:    ['Hotel Manager','Assistant Hotel Manager','Front Desk Officer',
                      'Housekeeping Supervisor','Housekeeping Staff','Food & Beverage Staff'],
-        exelhaul:   ['Operations Manager','Fleet Supervisor','Driver','Dispatcher',
-                     'Logistics Staff'],
+        exelhaul:   ['Transport Manager','Admin Assistant','Customer Service Relation Supervisor',
+                     'Dispatcher','Chief Mechanic','Assistant Mechanic'],
         laferme:    ['Restaurant Manager','Assistant Restaurant Manager',
                      'Head Chef','Sous Chef','Service Crew','Kitchen Staff'],
         toilena:    ['Plant Manager','Production Supervisor','Quality Control Officer',
@@ -5151,44 +5150,28 @@
             <p class="text-sm text-gray-500">Choose your role in 🔧 Neo Bros</p>
         </div>
         <div class="w-full flex flex-col gap-2 max-h-80 overflow-y-auto">
-            <button onclick="selectNeobrosPosition('Branch Manager')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
+            <button onclick="selectNeobrosPosition('Sales and Operation Manager')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500 transition-colors">
-                    <i class="ph-bold ph-wrench text-teal-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-briefcase text-teal-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Branch Manager</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Sales and Operation Manager</div>
                 </div>
             </button>
-            <button onclick="selectNeobrosPosition('Assistant Branch Manager')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
+            <button onclick="selectNeobrosPosition('Admin Assistant')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500 transition-colors">
-                    <i class="ph-bold ph-wrench text-teal-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-desktop text-teal-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Assistant Branch Manager</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Admin Assistant</div>
                 </div>
             </button>
-            <button onclick="selectNeobrosPosition('Sales Supervisor')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
+            <button onclick="selectNeobrosPosition('Pump Technician')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500 transition-colors">
                     <i class="ph-bold ph-wrench text-teal-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Sales Supervisor</div>
-                </div>
-            </button>
-            <button onclick="selectNeobrosPosition('Sales Associate')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
-                <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500 transition-colors">
-                    <i class="ph-bold ph-wrench text-teal-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Sales Associate</div>
-                </div>
-            </button>
-            <button onclick="selectNeobrosPosition('Store Staff')" class="neobros-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-teal-500 hover:bg-teal-50 transition-all text-left group">
-                <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500 transition-colors">
-                    <i class="ph-bold ph-wrench text-teal-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Store Staff</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-teal-700">Pump Technician</div>
                 </div>
             </button>
         </div>
@@ -5332,44 +5315,52 @@
             <p class="text-sm text-gray-500">Choose your role in 🚛 Exelhaul</p>
         </div>
         <div class="w-full flex flex-col gap-2 max-h-80 overflow-y-auto">
-            <button onclick="selectExelhaulPosition('Operations Manager')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
+            <button onclick="selectExelhaulPosition('Transport Manager')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
                     <i class="ph-bold ph-truck text-red-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Operations Manager</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Transport Manager</div>
                 </div>
             </button>
-            <button onclick="selectExelhaulPosition('Fleet Supervisor')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
+            <button onclick="selectExelhaulPosition('Admin Assistant')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
-                    <i class="ph-bold ph-truck text-red-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-desktop text-red-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Fleet Supervisor</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Admin Assistant</div>
                 </div>
             </button>
-            <button onclick="selectExelhaulPosition('Driver')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
+            <button onclick="selectExelhaulPosition('Customer Service Relation Supervisor')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
-                    <i class="ph-bold ph-truck text-red-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-headset text-red-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Driver</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Customer Service Relation Supervisor</div>
                 </div>
             </button>
             <button onclick="selectExelhaulPosition('Dispatcher')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
-                    <i class="ph-bold ph-truck text-red-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-radio text-red-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
                     <div class="font-semibold text-gray-800 group-hover:text-red-700">Dispatcher</div>
                 </div>
             </button>
-            <button onclick="selectExelhaulPosition('Logistics Staff')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
+            <button onclick="selectExelhaulPosition('Chief Mechanic')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
-                    <i class="ph-bold ph-truck text-red-600 group-hover:text-white transition-colors"></i>
+                    <i class="ph-bold ph-wrench text-red-600 group-hover:text-white transition-colors"></i>
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Logistics Staff</div>
+                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Chief Mechanic</div>
+                </div>
+            </button>
+            <button onclick="selectExelhaulPosition('Assistant Mechanic')" class="exelhaul-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-red-500 hover:bg-red-50 transition-all text-left group">
+                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
+                    <i class="ph-bold ph-wrench text-red-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-800 group-hover:text-red-700">Assistant Mechanic</div>
                 </div>
             </button>
         </div>
@@ -6357,11 +6348,17 @@ const HR_POSITION_GOALS = {
         { icon: 'ph-notepad',            text: 'Support new employee onboarding and orientation', done: false },
     ],
     'Recruitment Supervisor': [
-        { icon: 'ph-funnel',             text: 'Lead end-to-end recruitment for all departments', done: false },
-        { icon: 'ph-target',             text: 'Set and monitor hiring targets and timelines', done: false },
-        { icon: 'ph-star',               text: 'Build talent pipelines and employer branding strategies', done: false },
-        { icon: 'ph-chart-line-up',      text: 'Track and report recruitment metrics and KPIs', done: false },
-        { icon: 'ph-users-three',        text: 'Coach and develop the recruitment team', done: false },
+        { icon: 'ph-chat-circle',        text: 'Check Viber messages daily for mandatory and hiring concerns', done: false },
+        { icon: 'ph-envelope',           text: 'Check emails for new applications and mandatory communications', done: false },
+        { icon: 'ph-phone',              text: 'Call applicants for initial phone interview', done: false },
+        { icon: 'ph-arrow-up-right',     text: 'Endorse shortlisted applicants to hiring manager for screening and approval', done: false },
+        { icon: 'ph-folder-user',        text: 'Assist shortlisted applicants in securing pre-employment requirements', done: false },
+        { icon: 'ph-file-text',          text: 'Prepare summary of SSS, PhilHealth, and Pag-IBIG contributions', done: false },
+        { icon: 'ph-credit-card',        text: 'Enroll new employees for PayMaya disbursement', done: false },
+        { icon: 'ph-desktop',            text: 'Encode new employees in the HRIS system', done: false },
+        { icon: 'ph-bank',               text: 'Prepare ChinaBank ATM application documents for new hires', done: false },
+        { icon: 'ph-graduation-cap',     text: 'Conduct onboarding orientation for new hires', done: false },
+        { icon: 'ph-buildings',          text: 'Handles recruitment and contributions processing for U Hotels, El Mundo, La Ferme, and Exelhaul', done: false },
     ],
     'Recruitment Assistant': [
         { icon: 'ph-magnifying-glass',   text: 'Source and screen candidates through job portals and referrals', done: false },
@@ -7832,13 +7829,13 @@ const PLANNER_DATA = {
         { title:'Week 1 Review & Feedback', icon:'ph-flag-checkered',    color:'green',  tasks:['Complete Week 1 self-assessment','List 5 HR tasks you now know how to do','Submit review to supervisor','Ask 3 questions you still have','Celebrate completing Week 1! 🎉'] },
     ],
     'Recruitment Supervisor': [
-        { title:'Orientation & Strategy',   icon:'ph-sun',              color:'green',  tasks:['Complete HR onboarding form','Review recruitment policies and SLA','Meet the recruitment team','Review current open positions','Assess recruitment pipeline status'] },
-        { title:'Sourcing & Channels',      icon:'ph-magnifying-glass',  color:'pink',   tasks:['Review active job portals used','Assess quality of talent pool per channel','Identify underperforming channels','Explore new sourcing strategies','Review referral program effectiveness'] },
-        { title:'Screening & Assessment',   icon:'ph-clipboard-text',    color:'red',    tasks:['Review screening criteria per role','Assess current interview process','Conduct 1 mock interview review','Standardize competency-based questions','Review assessment tools in use'] },
-        { title:'Hiring Manager Partnership',icon:'ph-handshake',        color:'purple', tasks:['Meet 3 key hiring managers','Align on hiring needs and timelines','Set expectations on recruitment SLA','Discuss candidate quality feedback','Create hiring manager briefing template'] },
-        { title:'Metrics & Reporting',      icon:'ph-chart-bar',         color:'indigo', tasks:['Set up recruitment metrics dashboard','Track time-to-hire for open roles','Monitor offer acceptance rates','Prepare weekly recruitment status report','Present metrics to HR Manager'] },
-        { title:'Team Coaching',            icon:'ph-graduation-cap',    color:'cyan',   tasks:['Hold 1-on-1 with each recruiter','Provide feedback on a job posting','Coach on a sourcing strategy','Review team KPIs vs targets','Recognize top performer of the week'] },
-        { title:'Week 1 Review & Feedback', icon:'ph-flag-checkered',    color:'green',  tasks:['Submit Week 1 recruitment report','List 3 quick wins achieved','Align Week 2 hiring priorities','Recognize team contributions','Celebrate completing Week 1! 🎉'] },
+        { title:'Daily Communication',          icon:'ph-chat-circle',       color:'green',  tasks:['Check Viber for mandatory and hiring messages','Check email for new job applications','Reply to all urgent hiring concerns','Flag items requiring hiring manager attention','Update daily recruitment action log'] },
+        { title:'Applicant Screening & Calls',  icon:'ph-phone',             color:'pink',   tasks:['Review resumes submitted via email or portal','Call applicants for initial phone interview','Evaluate applicant fit against job requirements','Document screening notes per applicant','Update applicant status in tracking sheet'] },
+        { title:'Hiring Manager Coordination',  icon:'ph-handshake',         color:'red',    tasks:['Endorse shortlisted applicants to hiring managers','Align on applicant evaluation timeline','Collect hiring manager feedback after screening','Follow up on pending approvals','Coordinate interview schedules with hiring manager'] },
+        { title:'Pre-Employment Support',       icon:'ph-folder-user',       color:'purple', tasks:['Assist shortlisted applicants in gathering requirements','Check completeness of submitted documents','Follow up on missing pre-employment requirements','File and organize applicant requirement folders','Coordinate with HR Admin for new hire documents'] },
+        { title:'Contributions & Benefits',     icon:'ph-file-text',         color:'indigo', tasks:['Prepare SSS contribution summary for new hires','Prepare PhilHealth enrollment and contribution summary','Prepare Pag-IBIG contribution summary','Process and submit government contribution payments','Enroll new employees for PayMaya disbursement'] },
+        { title:'HRIS & Banking Enrollment',    icon:'ph-desktop',           color:'cyan',   tasks:['Encode new employees in HRIS system','Prepare ChinaBank ATM application documents','Submit ATM applications for new hires','Verify HRIS accuracy for each new employee','Coordinate with Finance for payroll integration'] },
+        { title:'Onboarding & Multi-Brand Scope', icon:'ph-graduation-cap',  color:'green',  tasks:['Conduct onboarding orientation for new hires','Cover company policies and culture during orientation','Handle recruitment for U Hotels, El Mundo, La Ferme, and Exelhaul','Manage contributions processing (ChinaBank/PayMaya) across all brands','Celebrate completing Week 1! 🎉'] },
     ],
     'Recruitment Assistant': [
         { title:'Orientation & Tools',      icon:'ph-sun',              color:'green',  tasks:['Complete HR onboarding form','Review recruitment process flow','Access job portal accounts','Review active job postings','Meet recruitment team and supervisor'] },
@@ -10249,7 +10246,7 @@ const MGMT_POSITIONS = [
     'Accounting Supervisor','Accounting Assistant Supervisor',
     'Purchasing Supervisor','Auditor Supervisor',
     'Operation Manager','Admin Officer',
-    'Station Manager','Sales Supervisor'
+    'Station Manager','Sales and Operation Manager'
 ];
 
 // Tabs managers (non-admins) can access in the Management Panel
@@ -10398,9 +10395,9 @@ const EVAL_ALLOWED_POSITIONS = [
     'Purchasing Supervisor','Auditor Supervisor',
     'Operation Manager','Admin Officer','Operations Manager',
     'Station Manager','Assistant Station Manager',
-    'Branch Manager','Sales Supervisor','General Manager',
+    'Sales and Operation Manager','General Manager',
     'Hotel Manager','Housekeeping Supervisor',
-    'Fleet Supervisor','Restaurant Manager',
+    'Transport Manager','Customer Service Relation Supervisor','Restaurant Manager',
     'Plant Manager','Production Supervisor'
 ];
 
@@ -11359,4 +11356,11 @@ window.selectSmartfuelsPosition = function(position) {
     window.__updateGreetingPosition(position);
     if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
     if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = d
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+</script>
+</body>
+</html>
