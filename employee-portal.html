@@ -5862,9 +5862,10 @@ let tourStep = 0;
                     // ── Greeting & position (all users) ──────────────────────
                     const _dept = (user.dept || '').toLowerCase();
                     if (user.isAdmin) {
+                        const adminFirst = user.name ? user.name.split(' ')[0] : (user.username || 'Admin');
                         const greetEl = document.getElementById('greeting');
-                        if (greetEl) greetEl.textContent = 'Welcome, Administrator!';
-                        document.querySelectorAll('.sidebar-user-name').forEach(el => el.textContent = 'Hi, Admin');
+                        if (greetEl) greetEl.textContent = 'Welcome, ' + adminFirst + '!';
+                        document.querySelectorAll('.sidebar-user-name').forEach(el => el.textContent = 'Hi, ' + adminFirst);
                         const sidebarLabel = document.getElementById('sidebar-dept-label');
                         if (sidebarLabel) sidebarLabel.innerHTML = '<span style="color:#6d28d9;font-weight:700;">&#9733; All Departments</span>';
                     } else {
@@ -11358,11 +11359,4 @@ window.selectSmartfuelsPosition = function(position) {
     window.__updateGreetingPosition(position);
     if (window.__brdcAutoDept && typeof applyDepartment === 'function') { applyDepartment(window.__brdcAutoDept); }
     if (!localStorage.getItem('brdc_portal_tour_done')) {
-        const tw = document.getElementById('tour-welcome');
-        if (tw) tw.classList.remove('hidden');
-    }
-};
-
-</script>
-</body>
-</html>
+        const tw = d
