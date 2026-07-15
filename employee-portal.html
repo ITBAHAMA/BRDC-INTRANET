@@ -1579,7 +1579,7 @@
                      'Purchasing Specialist','Purchasing Staff'],
         cmg:        ['General Manager','Operations Manager','Admin Officer',
                      'Admin Assistant','Admin Staff'],
-        smartfuels: ['Station Manager','Assistant Station Manager',
+        smartfuels: ['BU Head','Station Manager','Assistant Station Manager',
                      'Cashier','Pump Attendant','Station Staff'],
         neobros:    ['Sales and Operation Manager','Admin Assistant','Pump Technician'],
         panpacific: ['Hotel Manager','Assistant Hotel Manager','Front Desk Officer',
@@ -5239,6 +5239,14 @@
             <p class="text-sm text-gray-500">Choose your role in ⛽ SmartFuels</p>
         </div>
         <div class="w-full flex flex-col gap-2 max-h-80 overflow-y-auto">
+            <button onclick="selectSmartfuelsPosition('BU Head')" class="smartfuels-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-orange-500 hover:bg-orange-50 transition-all text-left group">
+                <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500 transition-colors">
+                    <i class="ph-bold ph-crown text-orange-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-800 group-hover:text-orange-700">BU Head</div>
+                </div>
+            </button>
             <button onclick="selectSmartfuelsPosition('Station Manager')" class="smartfuels-pos-btn w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50 hover:border-orange-500 hover:bg-orange-50 transition-all text-left group">
                 <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500 transition-colors">
                     <i class="ph-bold ph-gas-pump text-orange-600 group-hover:text-white transition-colors"></i>
@@ -10392,7 +10400,8 @@ const MGMT_POSITIONS = [
     'Accounting Supervisor','Accounting Assistant Supervisor',
     'Purchasing Supervisor','Auditor Supervisor',
     'Operation Manager','Admin Officer',
-    'Station Manager','Sales and Operation Manager'
+    'Station Manager','Sales and Operation Manager',
+    'BU Head'
 ];
 
 // Tabs managers (non-admins) can access in the Management Panel
@@ -10544,7 +10553,8 @@ const EVAL_ALLOWED_POSITIONS = [
     'Sales and Operation Manager','General Manager',
     'Hotel Manager','Housekeeping Supervisor',
     'Transport Manager','Customer Service Relation Supervisor','Restaurant Manager',
-    'Plant Manager','Production Supervisor'
+    'Plant Manager','Production Supervisor',
+    'BU Head'
 ];
 
 function _canDoEvaluation() {
