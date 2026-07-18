@@ -4368,34 +4368,20 @@
                                     <input type="hidden" id="eval-subject-username">
                                 </div>
 
-                                <!-- Star rating categories -->
-                                <div class="space-y-4">
-                                    <p class="text-xs font-bold text-gray-600 uppercase tracking-wide">Rate each category (1–5 stars)</p>
-
-                                    <!-- Job Knowledge -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Job Knowledge</label>
-                                        <div class="flex gap-1" id="stars-knowledge" data-field="knowledge"></div>
+                                <!-- 25-question rating -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <p class="text-xs font-bold text-gray-600 uppercase tracking-wide">Suriin ang bawat tanong</p>
+                                        <div class="flex gap-1.5 text-xs text-gray-400 font-bold">
+                                            <span class="w-7 text-center">1</span>
+                                            <span class="w-7 text-center">2</span>
+                                            <span class="w-7 text-center">3</span>
+                                            <span class="w-7 text-center">4</span>
+                                        </div>
                                     </div>
-                                    <!-- Work Quality -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Work Quality</label>
-                                        <div class="flex gap-1" id="stars-quality" data-field="quality"></div>
-                                    </div>
-                                    <!-- Productivity -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Productivity</label>
-                                        <div class="flex gap-1" id="stars-productivity" data-field="productivity"></div>
-                                    </div>
-                                    <!-- Attendance -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Attendance & Punctuality</label>
-                                        <div class="flex gap-1" id="stars-attendance" data-field="attendance"></div>
-                                    </div>
-                                    <!-- Teamwork -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Teamwork & Attitude</label>
-                                        <div class="flex gap-1" id="stars-teamwork" data-field="teamwork"></div>
+                                    <div class="text-xs text-gray-400 mb-3 text-right pr-0.5">← Pinakamababa &nbsp; Pinakamataas →</div>
+                                    <div id="eval-questions-list" class="space-y-1.5 max-h-[55vh] overflow-y-auto pr-1">
+                                        <!-- Populated by initEvalQuestions() -->
                                     </div>
                                 </div>
 
@@ -4486,18 +4472,13 @@
                                     <tr class="border-b border-gray-100 bg-gray-50">
                                         <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Employee</th>
                                         <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Evaluator</th>
-                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Knowledge</th>
-                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Quality</th>
-                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Productivity</th>
-                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Attendance</th>
-                                        <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Teamwork</th>
                                         <th class="text-center px-3 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Overall</th>
                                         <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Date</th>
                                         <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">Comments</th>
                                     </tr>
                                 </thead>
                                 <tbody id="hr-rec-tbody" class="divide-y divide-gray-50">
-                                    <tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">
+                                    <tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm">
                                         <i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading records…
                                     </td></tr>
                                 </tbody>
@@ -10551,48 +10532,84 @@ function _canDoEvaluation() {
     return EVAL_ALLOWED_POSITIONS.some(p => pos.toLowerCase().includes('manager') || pos.toLowerCase().includes('supervisor') || pos === p);
 }
 
-// Rating values per category, stored as eval-ratings object
-const _evalRatings = { knowledge: 0, quality: 0, productivity: 0, attendance: 0, teamwork: 0 };
+// ─── 25-question rating system ────────────────────────────────────────────────
 
-function _buildStars(containerId, field) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    for (let i = 1; i <= 5; i++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.val = i;
-        btn.dataset.field = field;
-        btn.innerHTML = `<i class="ph-fill ph-star text-2xl transition-colors"></i>`;
-        btn.className = 'focus:outline-none';
-        btn.onclick = function() {
-            _evalRatings[field] = parseInt(this.dataset.val);
-            _refreshStars(containerId, field);
-            _updateOverallScore();
-        };
-        container.appendChild(btn);
+const EVAL_QUESTIONS = [
+    'Pagbigay ng pag galang sa kapwa, at nag bibigay ng magandang estilo sa trabaho na nag reresulta ng positibong impresyon.',
+    'Nakikinig at sinasalang alang ang opinyon ng ibang tao.',
+    'Nag iisip ng ibang paraan o proseso para bumuo ng solusyon.',
+    'Handang magdesisyon na kayang panagutan at masolusyunan ang problema.',
+    'May kakayahan magtaguyod ng maganda ideya para sa pagpatuloy at ikabubuti ng kompanya.',
+    'May positibong kaalaman pagdating sa trabaho.',
+    'Nagbibigay ng maganda kaalaman sa kanyang mga katrabaho.',
+    'Kakayahan mag takda ng kanilang sariling kaalaman.',
+    'Bukas sa lahat ng kaalaman na pwedeng matutunan.',
+    'Pagtanggap ng pagkakamali.',
+    'Kakayahang mag desisyon sa isang bagay na kayang panindigan.',
+    'Tapat sa kompanya at sa kanyang prinsipyo.',
+    'May kakayahang suportahan ang kanya departamento sa mahihirap na sitwasyon.',
+    'Kakayahan hikayatin ang ibang tao sa pamamagitan ng pagpapakita ng kabutihan sa ibang tao.',
+    'Sinasangkot ang iba at hinihikayat ang kanilang pakikibahagi.',
+    'Kakayahang maisagawa ang prayoridad at target sa trabaho.',
+    'May plano magtagal sakanya trabaho.',
+    'May kakayahan makibahagi ng konsepto sa mga plano.',
+    'Gumagawa ng paraan at bumubuo ng kooperasyon pagdating sa mahirap na sitwasyon.',
+    'Pagiging sensitibo sa hindi masabing damdamin ng iba.',
+    'Nakatuon ang koponan sa kung ano ang makakatulong sa tagumpay sa pangmatagalang panahon.',
+    'Nagbibigay ng makatarungan at makabuluhang feedback sa mga koponan.',
+    'Hinihikayat ang iba para sa layunin na mag expect ng normal sa kompanya.',
+    'Nagtatakda ng makatotohanang deadline, gawain at pamantayan para sa iba.',
+    'Namamahala sa mga matagumpay na proyekto mula sa simula hanggang sa pag hahatid ng impormasyon.'
+];
+
+// q1–q25 ratings, 0 = unrated
+const _evalRatings = {};
+for (let i = 1; i <= 25; i++) _evalRatings['q' + i] = 0;
+
+function initEvalQuestions() {
+    const listEl = document.getElementById('eval-questions-list');
+    if (!listEl) return;
+    listEl.innerHTML = EVAL_QUESTIONS.map((q, idx) => {
+        const n = idx + 1;
+        return `
+        <div class="flex items-start gap-2 py-2 border-b border-gray-50 last:border-0" id="eval-q-row-${n}">
+            <span class="text-xs font-bold text-gray-400 w-5 flex-shrink-0 pt-0.5">${n}.</span>
+            <p class="flex-1 text-xs text-gray-700 leading-relaxed">${q}</p>
+            <div class="flex gap-1 flex-shrink-0 ml-2">
+                ${[1,2,3,4].map(v => `
+                <button type="button"
+                    id="eval-q${n}-btn${v}"
+                    onclick="_setQRating(${n}, ${v})"
+                    class="w-7 h-7 rounded-lg text-xs font-black border-2 transition-all focus:outline-none border-gray-200 text-gray-300 hover:border-emerald-400 hover:text-emerald-600">
+                    ${v}
+                </button>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function _setQRating(qNum, val) {
+    _evalRatings['q' + qNum] = val;
+    for (let v = 1; v <= 4; v++) {
+        const btn = document.getElementById(`eval-q${qNum}-btn${v}`);
+        if (!btn) continue;
+        if (v === val) {
+            btn.className = 'w-7 h-7 rounded-lg text-xs font-black border-2 transition-all focus:outline-none border-emerald-500 bg-emerald-500 text-white';
+        } else {
+            btn.className = 'w-7 h-7 rounded-lg text-xs font-black border-2 transition-all focus:outline-none border-gray-200 text-gray-300 hover:border-emerald-400 hover:text-emerald-600';
+        }
     }
-    _refreshStars(containerId, field);
+    _updateOverallScore();
 }
 
-function _refreshStars(containerId, field) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const val = _evalRatings[field] || 0;
-    container.querySelectorAll('button').forEach(btn => {
-        const v = parseInt(btn.dataset.val);
-        const icon = btn.querySelector('i');
-        if (icon) icon.className = `ph-fill ph-star text-2xl transition-colors ${v <= val ? 'text-amber-400' : 'text-gray-200'}`;
-    });
-}
-
-function _resetAllStars() {
-    Object.keys(_evalRatings).forEach(k => _evalRatings[k] = 0);
-    _buildStars('stars-knowledge',    'knowledge');
-    _buildStars('stars-quality',      'quality');
-    _buildStars('stars-productivity', 'productivity');
-    _buildStars('stars-attendance',   'attendance');
-    _buildStars('stars-teamwork',     'teamwork');
+function _resetAllRatings() {
+    for (let i = 1; i <= 25; i++) {
+        _evalRatings['q' + i] = 0;
+        for (let v = 1; v <= 4; v++) {
+            const btn = document.getElementById(`eval-q${i}-btn${v}`);
+            if (btn) btn.className = 'w-7 h-7 rounded-lg text-xs font-black border-2 transition-all focus:outline-none border-gray-200 text-gray-300 hover:border-emerald-400 hover:text-emerald-600';
+        }
+    }
     _updateOverallScore();
 }
 
@@ -10601,8 +10618,8 @@ function _updateOverallScore() {
     const scoreEl = document.getElementById('eval-overall-score');
     if (!scoreEl) return;
     if (vals.length === 0) { scoreEl.textContent = '—'; return; }
-    const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
-    scoreEl.textContent = avg + ' / 5.0';
+    const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+    scoreEl.textContent = avg + ' / 4.00';
 }
 
 // Cached employee list for filter
@@ -10636,6 +10653,8 @@ async function initEvalTab() {
     }
     if (deniedEl) deniedEl.classList.add('hidden');
     if (mainEl)   mainEl.classList.remove('hidden');
+    // Build the 25-question form (idempotent)
+    initEvalQuestions();
     // Reset to Evaluate tab on each nav
     switchEvalTab('evaluate');
     closeEvalForm();
@@ -10756,8 +10775,8 @@ function openEvalForm(name, dept, years, position) {
     // Store for submission — use name as identifier since birthdays table uses name
     document.getElementById('eval-subject-username').value = name;
 
-    // Reset ratings & stars
-    _resetAllStars();
+    // Reset ratings
+    _resetAllRatings();
 
     // Clear comments & msg
     const cmts = document.getElementById('eval-comments');
@@ -10791,35 +10810,41 @@ async function submitEvaluation() {
     const empName = document.getElementById('eval-subject-username')?.value;
     if (!empName) return;
 
-    const cats = ['knowledge','quality','productivity','attendance','teamwork'];
-    const unrated = cats.filter(c => !_evalRatings[c]);
+    // Validate all 25 answered
+    const unrated = [];
+    for (let i = 1; i <= 25; i++) {
+        if (!_evalRatings['q' + i]) unrated.push(i);
+    }
     if (unrated.length > 0) {
-        showEvalMsg('Please rate all 5 categories before submitting.', false);
+        showEvalMsg(`Pakisagutan ang lahat ng 25 tanong (hindi pa nasasagot: ${unrated.slice(0,5).map(n=>'#'+n).join(', ')}${unrated.length>5?' …':''}).`, false);
+        // Scroll to first unanswered
+        const firstRow = document.getElementById('eval-q-row-' + unrated[0]);
+        if (firstRow) firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
 
-    const overall = (cats.reduce((s,c)=>s+_evalRatings[c],0)/cats.length).toFixed(2);
+    const qKeys = Array.from({length:25}, (_,i) => 'q'+(i+1));
+    const sum   = qKeys.reduce((s,k) => s + _evalRatings[k], 0);
+    const overall = (sum / 25).toFixed(2);
+
     const evaluator = (window.__brdcUser||{}).name || (window.__brdcUser||{}).username || 'Unknown';
     const comments  = (document.getElementById('eval-comments')?.value||'').trim();
 
     const payload = {
-        employee_name: empName,
+        employee_name:  empName,
         evaluator_name: evaluator,
-        rating_knowledge:    _evalRatings.knowledge,
-        rating_quality:      _evalRatings.quality,
-        rating_productivity: _evalRatings.productivity,
-        rating_attendance:   _evalRatings.attendance,
-        rating_teamwork:     _evalRatings.teamwork,
-        overall_rating:      parseFloat(overall),
-        comments:            comments || null,
-        evaluated_at:        new Date().toISOString()
+        overall_rating: parseFloat(overall),
+        comments:       comments || null,
+        evaluated_at:   new Date().toISOString()
     };
+    // Attach q1–q25
+    for (let i = 1; i <= 25; i++) payload['q' + i] = _evalRatings['q' + i];
 
     const { error } = await SUPA.from('performance_evaluations').insert(payload);
     if (error) { showEvalMsg('Error saving: ' + error.message, false); return; }
 
     showEvalMsg('✓ Evaluation submitted successfully!', true);
-    _resetAllStars();
+    _resetAllRatings();
     const cmts = document.getElementById('eval-comments');
     if (cmts) cmts.value = '';
     setTimeout(closeEvalForm, 1800);
@@ -10858,7 +10883,7 @@ function switchEvalTab(tab) {
 async function loadHrRecords() {
     const tbody = document.getElementById('hr-rec-tbody');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm">
         <i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading records…</td></tr>`;
 
     // Pull all evaluations + directory for dept lookup
@@ -10917,9 +10942,9 @@ function hrRecPage(dir) {
 }
 
 function _ratingBadge(val) {
-    if (!val) return '<span class="text-gray-300">—</span>';
+    if (!val && val !== 0) return '<span class="text-gray-300">—</span>';
     const v = parseFloat(val);
-    const color = v >= 4.5 ? 'emerald' : v >= 3.5 ? 'blue' : v >= 2.5 ? 'amber' : 'red';
+    const color = v >= 3.5 ? 'emerald' : v >= 2.5 ? 'blue' : v >= 1.5 ? 'amber' : 'red';
     return `<span class="inline-block w-9 text-center font-black text-${color}-600">${v.toFixed(1)}</span>`;
 }
 
@@ -10936,7 +10961,7 @@ function _renderHrRecords() {
     const slice = _hrRecFilt.slice(start, start + HR_REC_PER_PAGE);
 
     if (slice.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-gray-400 text-sm">No evaluations found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm">No evaluations found.</td></tr>`;
         if (pageInfo) pageInfo.textContent = '0 records';
         return;
     }
@@ -10946,9 +10971,9 @@ function _renderHrRecords() {
             ? new Date(r.evaluated_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' })
             : '—';
         const overall = parseFloat(r.overall_rating);
-        const overallColor = overall >= 4.5 ? 'emerald' : overall >= 3.5 ? 'blue' : overall >= 2.5 ? 'amber' : 'red';
+        const overallColor = overall >= 3.5 ? 'emerald' : overall >= 2.5 ? 'blue' : overall >= 1.5 ? 'amber' : 'red';
         const comments = r.comments
-            ? `<span class="block max-w-[160px] truncate text-gray-500" title="${r.comments.replace(/"/g,'&quot;')}">${r.comments}</span>`
+            ? `<span class="block max-w-[200px] truncate text-gray-500" title="${r.comments.replace(/"/g,'&quot;')}">${r.comments}</span>`
             : '<span class="text-gray-300">—</span>';
         return `<tr class="hover:bg-emerald-50 transition-colors">
             <td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
@@ -10956,14 +10981,9 @@ function _renderHrRecords() {
                 <div class="text-xs text-gray-400">${r.dept || ''}</div>
             </td>
             <td class="px-4 py-3 text-gray-600 whitespace-nowrap">${r.evaluator_name || '—'}</td>
-            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_knowledge)}</td>
-            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_quality)}</td>
-            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_productivity)}</td>
-            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_attendance)}</td>
-            <td class="px-3 py-3 text-center">${_ratingBadge(r.rating_teamwork)}</td>
             <td class="px-3 py-3 text-center">
                 <span class="inline-block px-2 py-0.5 rounded-full text-xs font-black bg-${overallColor}-100 text-${overallColor}-700">
-                    ${overall.toFixed(2)}
+                    ${isNaN(overall) ? '—' : overall.toFixed(2)}
                 </span>
             </td>
             <td class="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">${dateStr}</td>
@@ -10997,15 +11017,19 @@ function _renderHrSummary(data) {
 
 function exportHrRecordsCsv() {
     if (!_hrRecFilt.length) return;
-    const headers = ['Employee','Department','Evaluator','Knowledge','Quality','Productivity','Attendance','Teamwork','Overall','Date','Comments'];
-    const rows = _hrRecFilt.map(r => [
-        r.employee_name, r.dept || '', r.evaluator_name || '',
-        r.rating_knowledge, r.rating_quality, r.rating_productivity,
-        r.rating_attendance, r.rating_teamwork,
-        parseFloat(r.overall_rating).toFixed(2),
-        r.evaluated_at ? new Date(r.evaluated_at).toLocaleDateString('en-PH') : '',
-        (r.comments || '').replace(/,/g,'；')
-    ]);
+    const qHeaders = Array.from({length:25}, (_,i) => 'Q'+(i+1));
+    const headers = ['Employee','Department','Evaluator', ...qHeaders, 'Overall','Date','Comments'];
+    const rows = _hrRecFilt.map(r => {
+        const qVals = Array.from({length:25}, (_,i) => r['q'+(i+1)] ?? '');
+        const overall = parseFloat(r.overall_rating);
+        return [
+            r.employee_name, r.dept || '', r.evaluator_name || '',
+            ...qVals,
+            isNaN(overall) ? '' : overall.toFixed(2),
+            r.evaluated_at ? new Date(r.evaluated_at).toLocaleDateString('en-PH') : '',
+            (r.comments || '').replace(/,/g,'；')
+        ];
+    });
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -11050,17 +11074,19 @@ async function loadEvalHistory(empName) {
         histEl.innerHTML = `<p class="text-xs text-gray-400 text-center py-3">No previous evaluations on record.</p>`;
         return;
     }
-    const ratingColor = r => r >= 4 ? 'text-emerald-600' : r >= 3 ? 'text-amber-500' : 'text-red-500';
-    histEl.innerHTML = data.map(d => `
+    const ratingColor = r => r >= 3.5 ? 'text-emerald-600' : r >= 2.5 ? 'text-amber-500' : 'text-red-500';
+    histEl.innerHTML = data.map(d => {
+        const ov = parseFloat(d.overall_rating);
+        return `
         <div class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs space-y-1">
             <div class="flex items-center justify-between">
-                <span class="font-bold text-gray-700">Overall: <span class="${ratingColor(d.overall_rating)}">${parseFloat(d.overall_rating).toFixed(1)} / 5.0</span></span>
+                <span class="font-bold text-gray-700">Overall: <span class="${ratingColor(ov)}">${isNaN(ov) ? '—' : ov.toFixed(2)} / 4.00</span></span>
                 <span class="text-gray-400">${new Date(d.evaluated_at).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}</span>
             </div>
             <p class="text-gray-500">By: ${d.evaluator_name}</p>
             ${d.comments ? `<p class="text-gray-600 italic">"${d.comments}"</p>` : ''}
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 // ── BROADCAST ALERT (Supabase) ────────────────────────────────────────────────
