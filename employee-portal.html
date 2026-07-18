@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPA = supabase.createClient(
-            'https://mtrrslztrjcxwatdossu.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10cnJzbHp0cmpjeHdhdGRvc3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzA0MjUsImV4cCI6MjA5NzI0NjQyNX0.sSvh3-SA-wjtggEw0pJ4dy5xZEwRG-E3F0rT_1PUpBo'
+            'https://ryzucipineonaytxotuu.supabase.co',
+            'sb_publishable_1uJu29nAaLY6x4OZr1grgQ_tvUILp9s'
         );
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4360,10 +4360,10 @@
                                     <div class="w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center flex-shrink-0">
                                         <i class="ph-fill ph-user text-emerald-700 text-xl"></i>
                                     </div>
-                                    <div>
+                                    <div class="flex-1 min-w-0">
                                         <p class="text-xs text-emerald-600 font-semibold uppercase tracking-wide">You are evaluating</p>
-                                        <p id="eval-subject-name" class="text-base font-bold text-gray-900">—</p>
-                                        <p id="eval-subject-meta" class="text-xs text-gray-500">—</p>
+                                        <p id="eval-subject-name" class="text-sm font-bold text-gray-900 truncate">—</p>
+                                        <p id="eval-subject-meta" class="text-xs text-gray-500 truncate">—</p>
                                     </div>
                                     <input type="hidden" id="eval-subject-username">
                                 </div>
@@ -8265,7 +8265,7 @@ function openPlannerDay(dayIdx, day, taskStates, c) {
 })();
 
 // ─── DEPT MEMOS FROM SUPABASE STORAGE ─────────────────────────────────────────
-const SUPA_STORAGE_BASE = 'https://mtrrslztrjcxwatdossu.supabase.co/storage/v1/object/public/MEMOS';
+const SUPA_STORAGE_BASE = 'https://ryzucipineonaytxotuu.supabase.co/storage/v1/object/public/MEMOS';
 
 // HR 2026 memos — visible to ALL departments
 const HR_MEMOS_2026 = [
@@ -10732,14 +10732,11 @@ function _renderEvalList(list) {
     listEl.innerHTML = list.map(e => {
         const tenureText = e.years !== null ? ` &middot; ${e.years} yr${e.years !== 1 ? 's' : ''}` : '';
         const subLine    = `${e.position || e.dept || '—'}${tenureText}`;
-        // Use data-* attributes to avoid double-quote collisions in onclick
-        const safeAttr = s => (s ?? '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        // Store cache index — avoids any HTML attribute encoding issues with special chars in names
+        const cacheIdx   = _evalEmployeeCache.indexOf(e);
         return `
         <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer"
-             data-ename="${safeAttr(e.name)}"
-             data-edept="${safeAttr(e.dept)}"
-             data-eyears="${e.years ?? ''}"
-             data-epos="${safeAttr(e.position)}"
+             data-cidx="${cacheIdx}"
              onclick="_evalCardClick(this)">
             <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                 <i class="ph-fill ph-user text-emerald-600"></i>
@@ -10753,14 +10750,12 @@ function _renderEvalList(list) {
     }).join('');
 }
 
-// Reads data-* attributes from the employee card and calls openEvalForm safely
+// Looks up employee from cache by index — bypasses HTML attribute encoding entirely
 function _evalCardClick(el) {
-    const name     = el.dataset.ename || '';
-    const dept     = el.dataset.edept || '';
-    const yearsRaw = el.dataset.eyears;
-    const years    = yearsRaw === '' ? null : parseInt(yearsRaw, 10);
-    const position = el.dataset.epos || '';
-    openEvalForm(name, dept, years, position);
+    const idx = parseInt(el.dataset.cidx, 10);
+    const emp = _evalEmployeeCache[idx];
+    if (!emp) return;
+    openEvalForm(emp.name, emp.dept, emp.years, emp.position);
 }
 
 function openEvalForm(name, dept, years, position) {
