@@ -10669,13 +10669,14 @@ async function loadEvalEmployees() {
     // Show loading
     listEl.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm"><i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading employees…</div>`;
 
-    // Fetch directory_entries (authoritative list) + birthdays (for tenure) in parallel
-    const [dirRes, bdayRes] = await Promise.all([
+    // Fetch profiles (portal accounts) + directory_entries (non-account staff) + birthdays (tenure)
+    const [profRes, dirRes, bdayRes] = await Promise.all([
+        SUPA.from('profiles').select('full_name,department,position'),
         SUPA.from('directory_entries').select('name,dept,position'),
         SUPA.from('birthdays').select('name,start_date')
     ]);
 
-    if (dirRes.error || !dirRes.data) {
+    if ((profRes.error || !profRes.data) && (dirRes.error || !dirRes.data)) {
         listEl.innerHTML = `<p class="text-red-400 text-sm text-center py-8">Failed to load employee data.</p>`;
         return;
     }
@@ -10690,16 +10691,41 @@ async function loadEvalEmployees() {
         }
     });
 
-    // Filter out test/dummy entries, map to eval employee objects
-    const TEST_NAMES = /^(asdasd|test|toni is)/i;
-    const employees = dirRes.data
-        .filter(p => p.name && !TEST_NAMES.test(p.name.trim()))
-        .map(p => ({
-            name:     p.name,
-            dept:     p.dept || '',
-            position: p.position || '',
-            years:    tenureMap[p.name.toLowerCase()] ?? null   // null = tenure unknown
-        }))
+    // Filter out test/dummy/system entries
+    const TEST_NAMES = /^(asdasd|test|toni is|administrator|admin|dinez|toni)$|^(asdasd|test|toni is)/i;
+    const SYSTEM_NAMES = /^(administrator|accounting staff|accounting|admin)$/i;
+    const _isRealPerson = n => {
+        const t = (n || '').trim();
+        if (!t || t.length < 3) return false;
+        if (TEST_NAMES.test(t) || SYSTEM_NAMES.test(t)) return false;
+        if (t === t.toUpperCase() && !t.includes(' ')) return false; // all-caps single token
+        return true;
+    };
+
+    // Merge profiles (portal accounts) + directory_entries (staff without accounts)
+    const _merged = new Map();   // key: lowercase name
+    const _add = (name, dept, position) => {
+        if (!_isRealPerson(name)) return;
+        const key = name.trim().toLowerCase();
+        const existing = _merged.get(key);
+        if (existing) {
+            // Fill any gaps from the second source
+            if (!existing.dept     && dept)     existing.dept     = dept;
+            if (!existing.position && position) existing.position = position;
+            return;
+        }
+        _merged.set(key, {
+            name:     name.trim(),
+            dept:     dept || '',
+            position: position || '',
+            years:    tenureMap[key] ?? null   // null = tenure unknown
+        });
+    };
+
+    (profRes.data || []).forEach(p => _add(p.full_name, p.department, p.position));
+    (dirRes.data  || []).forEach(d => _add(d.name,      d.dept,       d.position));
+
+    const employees = Array.from(_merged.values())
         .sort((a, b) => a.name.localeCompare(b.name));
 
     _evalEmployeeCache = employees;
@@ -10881,9 +10907,10 @@ async function loadHrRecords() {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm">
         <i class="ph-fill ph-spinner-gap animate-spin text-2xl block mb-2"></i>Loading records…</td></tr>`;
 
-    // Pull all evaluations + directory for dept lookup
-    const [evalRes, dirRes] = await Promise.all([
+    // Pull all evaluations + profiles & directory for dept lookup
+    const [evalRes, profRes, dirRes] = await Promise.all([
         SUPA.from('performance_evaluations').select('*').order('evaluated_at', { ascending: false }),
+        SUPA.from('profiles').select('full_name,department'),
         SUPA.from('directory_entries').select('name,dept')
     ]);
 
@@ -10892,9 +10919,10 @@ async function loadHrRecords() {
         return;
     }
 
-    // Build dept map from directory
+    // Build dept map from BOTH profiles and directory (profiles win on conflict)
     const deptMap = {};
-    (dirRes.data || []).forEach(d => { deptMap[d.name.toLowerCase()] = d.dept || ''; });
+    (dirRes.data  || []).forEach(d => { if (d.name)      deptMap[d.name.toLowerCase()]      = d.dept       || ''; });
+    (profRes.data || []).forEach(p => { if (p.full_name) deptMap[p.full_name.toLowerCase()] = p.department || ''; });
 
     _hrRecAll = evalRes.data.map(r => ({
         ...r,
