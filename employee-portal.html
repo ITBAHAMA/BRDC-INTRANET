@@ -744,6 +744,54 @@
             color: #e2e8f0 !important;
         }
         body.dark input::placeholder { color: #475569 !important; }
+
+        /* ── Memo accordions ─────────────────────────────────────────────── */
+        .memo-acc { overflow: hidden; }
+        .memo-acc-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.15rem 1.5rem;
+            text-align: left;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            transition: background-color .18s ease;
+        }
+        .memo-acc-btn:hover { background: rgba(0,0,0,0.025); }
+        .memo-acc-btn:focus-visible {
+            outline: 2px solid rgba(34,197,94,0.5);
+            outline-offset: -2px;
+        }
+        .memo-acc-chevron {
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+            color: #9ca3af;
+            flex-shrink: 0;
+        }
+        .memo-acc.open .memo-acc-chevron { transform: rotate(180deg); }
+        .memo-acc-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows .28s cubic-bezier(.4,0,.2,1);
+        }
+        .memo-acc.open .memo-acc-panel { grid-template-rows: 1fr; }
+        .memo-acc-panel > .memo-acc-inner { overflow: hidden; min-height: 0; }
+        .memo-acc-panel > .memo-acc-inner > div { padding: 0 1.5rem 1.35rem; }
+        .memo-acc-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.6rem;
+            height: 1.6rem;
+            padding: 0 .5rem;
+            border-radius: 999px;
+            font-size: .7rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        body.dark .memo-acc-btn:hover { background: rgba(255,255,255,0.04); }
+
         body.dark .memo-row {
             border-color: #334155 !important;
         }
@@ -2529,30 +2577,43 @@
                 </div>
 
                 <!-- HR 2026 Memos -->
-                <div class="bento-tile col-span-1 md:col-span-2 p-6">
-                    <h3 class="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
-                        <i class="ph-fill ph-users text-indigo-500"></i> Human Resources — Company-Wide Memos
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 normal-case tracking-normal">2026</span>
-                    </h3>
-                    <div id="hr-memos-2026-list" class="space-y-2"></div>
+                <div id="memo-acc-hr2026" class="memo-acc bento-tile col-span-1 md:col-span-2" data-memo-group>
+                    <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+                        <i class="ph-fill ph-users text-indigo-500 text-xl flex-shrink-0"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Human Resources — Company-Wide</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">2026 memos &amp; policies</span>
+                        </span>
+                        <span class="memo-acc-count bg-indigo-100 text-indigo-700" data-count>0</span>
+                        <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+                    </button>
+                    <div class="memo-acc-panel"><div class="memo-acc-inner">
+                        <div id="hr-memos-2026-list" class="space-y-2"></div>
+                    </div></div>
                 </div>
 
                 <!-- HR 2025 Memos -->
-                <div class="bento-tile col-span-1 md:col-span-2 p-6">
-                    <h3 class="font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
-                        <i class="ph-fill ph-users text-blue-500"></i> Human Resources — Company-Wide Memos
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 normal-case tracking-normal">2025</span>
-                    </h3>
-                    <div id="hr-memos-list" class="space-y-2"></div>
+                <div id="memo-acc-hr2025" class="memo-acc bento-tile col-span-1 md:col-span-2" data-memo-group>
+                    <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+                        <i class="ph-fill ph-users text-blue-500 text-xl flex-shrink-0"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Human Resources — Company-Wide</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">2025 memos &amp; policies</span>
+                        </span>
+                        <span class="memo-acc-count bg-blue-100 text-blue-700" data-count>0</span>
+                        <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+                    </button>
+                    <div class="memo-acc-panel"><div class="memo-acc-inner">
+                        <div id="hr-memos-list" class="space-y-2"></div>
+                    </div></div>
                 </div>
 
-                <!-- Dept-specific memos (IT only for now) -->
-                <div id="dept-memos-section" class="bento-tile col-span-1 md:col-span-2 p-6 hidden">
-                    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
-                        <i class="ph-fill ph-folder-open text-brand-green"></i> <span id="dept-memos-title">Department Memos</span>
-                    </h3>
-                    <div id="memos-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                <!-- Department memos — one dropdown per department -->
+                <div id="dept-memos-section" class="col-span-1 md:col-span-2 space-y-6 hidden">
+                    <div id="dept-memos-accordions" class="space-y-6"></div>
                 </div>
+                <!-- Legacy per-dept notice cards (kept for compatibility, not displayed) -->
+                <div id="memos-grid" class="hidden"></div>
 
                 <!-- No results -->
                 <div id="memos-no-results" class="bento-tile col-span-1 md:col-span-2 p-10 flex-col items-center justify-center text-center hidden">
@@ -8430,66 +8491,163 @@ function loadDeptMemos() {
     const hrList = document.getElementById('hr-memos-list');
     if (hrList) hrList.innerHTML = HR_MEMOS.map(memoRowHtml).join('');
 
-    // Render dept-specific memos.
-    // Admins see EVERY department's memos (tagged by dept); everyone else sees their own.
+    // Render dept-specific memos as one collapsible dropdown per department.
+    // Admins see EVERY department; everyone else sees only their own.
     const deptSection = document.getElementById('dept-memos-section');
-    const deptGrid    = document.getElementById('memos-grid');
-    const deptTitle   = document.getElementById('dept-memos-title');
+    const deptWrap    = document.getElementById('dept-memos-accordions');
 
-    let deptMemos = [];
-    let titleText = '';
-    let labelSuffix = '';
+    const groups = {};   // { deptKey: [memo, ...] }
 
     if (user.isAdmin) {
-        // Flatten all departments, tagging each row with its dept
         Object.keys(DEPT_MEMOS).forEach(k => {
-            (DEPT_MEMOS[k] || []).forEach(m => deptMemos.push({ ...m, _dept: k }));
+            if ((DEPT_MEMOS[k] || []).length) groups[k] = DEPT_MEMOS[k].slice();
         });
-        titleText   = 'All Department Memos';
-        labelSuffix = deptMemos.length ? ' + All Depts' : '';
-    } else {
-        deptMemos   = (DEPT_MEMOS[dept] || []).map(m => ({ ...m, _dept: dept }));
-        titleText   = dept.toUpperCase() + ' Department Memos';
-        labelSuffix = deptMemos.length ? ' + ' + dept.toUpperCase() + ' Dept' : '';
+    } else if ((DEPT_MEMOS[dept] || []).length) {
+        groups[dept] = DEPT_MEMOS[dept].slice();
     }
 
-    if (deptMemos.length && deptSection && deptGrid) {
+    const deptKeys  = Object.keys(groups).sort();
+    const deptTotal = deptKeys.reduce((n, k) => n + groups[k].length, 0);
+
+    if (deptKeys.length && deptSection && deptWrap) {
         deptSection.classList.remove('hidden');
-        if (deptTitle) deptTitle.textContent = titleText;
-        // Group by dept so admins get a readable, sectioned list
-        if (user.isAdmin) {
-            const groups = {};
-            deptMemos.forEach(m => { (groups[m._dept] = groups[m._dept] || []).push(m); });
-            deptGrid.innerHTML = Object.keys(groups).sort().map(k => `
-                <div class="col-span-full mt-3 first:mt-0">
-                    <p class="text-xs font-black uppercase tracking-wider text-gray-400 mb-1.5">${k}</p>
-                </div>
-                ${groups[k].map(memoRowHtml).join('')}
-            `).join('');
-        } else {
-            deptGrid.innerHTML = deptMemos.map(memoRowHtml).join('');
-        }
+        deptWrap.innerHTML = deptKeys.map(k => memoAccordionHtml(k, groups[k], k === dept)).join('');
     } else if (deptSection) {
         deptSection.classList.add('hidden');
+        if (deptWrap) deptWrap.innerHTML = '';
     }
 
-    const total = HR_MEMOS_2026.length + HR_MEMOS.length + deptMemos.length;
+    // Counts in the dropdown headers
+    _setMemoAccCount('memo-acc-hr2026', HR_MEMOS_2026.length);
+    _setMemoAccCount('memo-acc-hr2025', HR_MEMOS.length);
+
+    // Default open state: your own department is expanded, HR sections start closed.
+    // Admins see every department, so everything starts closed to keep it scannable.
+    document.querySelectorAll('#memos .memo-acc').forEach(acc => setMemoAccOpen(acc, false));
+    if (!user.isAdmin && groups[dept]) {
+        setMemoAccOpen(document.getElementById('memo-acc-dept-' + dept), true);
+    }
+
+    const labelSuffix = deptTotal
+        ? (user.isAdmin ? ' + All Depts' : ' + ' + (DEPT_MEMO_LABELS[dept] || dept.toUpperCase()))
+        : '';
+    const total = HR_MEMOS_2026.length + HR_MEMOS.length + deptTotal;
     if (label) label.textContent = `${total} memo${total !== 1 ? 's' : ''} available — HR 2026 + HR 2025${labelSuffix}`;
 }
 
+// ─── ACCORDIONS ───────────────────────────────────────────────────────────────
+// Friendly names + icons for each department dropdown header.
+const DEPT_MEMO_LABELS = {
+    it: 'Information Technology', hr: 'Human Resources', accounting: 'Accounting',
+    purchasing: 'Purchasing', auditor: 'Audit', cmg: 'CMG Admin',
+    smartfuels: 'SmartFuels', neobros: 'Neo Bros', panpacific: 'Pan Pacific',
+    uhotels: 'U Hotels', exelhaul: 'Exelhaul', laferme: 'La Ferme', toilena: 'Toilena',
+};
+const DEPT_MEMO_STYLES = {
+    it:         { icon: 'ph-desktop',        text: 'text-blue-500',    pill: 'bg-blue-100 text-blue-700' },
+    hr:         { icon: 'ph-users',          text: 'text-pink-500',    pill: 'bg-pink-100 text-pink-700' },
+    accounting: { icon: 'ph-calculator',     text: 'text-green-500',   pill: 'bg-green-100 text-green-700' },
+    purchasing: { icon: 'ph-shopping-cart',  text: 'text-orange-500',  pill: 'bg-orange-100 text-orange-700' },
+    auditor:    { icon: 'ph-shield-check',   text: 'text-purple-500',  pill: 'bg-purple-100 text-purple-700' },
+    cmg:        { icon: 'ph-buildings',      text: 'text-gray-500',    pill: 'bg-gray-100 text-gray-700' },
+    smartfuels: { icon: 'ph-gas-pump',       text: 'text-yellow-500',  pill: 'bg-yellow-100 text-yellow-700' },
+    neobros:    { icon: 'ph-storefront',     text: 'text-cyan-500',    pill: 'bg-cyan-100 text-cyan-700' },
+    panpacific: { icon: 'ph-buildings',      text: 'text-teal-500',    pill: 'bg-teal-100 text-teal-700' },
+    uhotels:    { icon: 'ph-bed',            text: 'text-indigo-500',  pill: 'bg-indigo-100 text-indigo-700' },
+    exelhaul:   { icon: 'ph-truck',          text: 'text-red-500',     pill: 'bg-red-100 text-red-700' },
+    laferme:    { icon: 'ph-fork-knife',     text: 'text-lime-600',    pill: 'bg-lime-100 text-lime-700' },
+    toilena:    { icon: 'ph-drop',           text: 'text-fuchsia-500', pill: 'bg-fuchsia-100 text-fuchsia-700' },
+};
+
+function memoAccordionHtml(deptKey, memos, isOwnDept) {
+    const st    = DEPT_MEMO_STYLES[deptKey] || { icon: 'ph-folder-open', text: 'text-brand-green', pill: 'bg-gray-100 text-gray-700' };
+    const label = DEPT_MEMO_LABELS[deptKey] || deptKey.toUpperCase();
+    const count = memos.length;
+    const badge = isOwnDept
+        ? '<span class="text-[10px] font-black uppercase tracking-wider text-brand-green bg-green-50 px-2 py-0.5 rounded-full">Your dept</span>'
+        : '';
+    return `
+    <div id="memo-acc-dept-${deptKey}" class="memo-acc bento-tile" data-memo-group>
+        <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+            <i class="ph-fill ${st.icon} ${st.text} text-xl flex-shrink-0"></i>
+            <span class="flex-1 min-w-0">
+                <span class="flex items-center gap-2">
+                    <span class="font-bold text-sm uppercase tracking-wider text-gray-500 truncate">${label}</span>
+                    ${badge}
+                </span>
+                <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">Department memos &amp; policies</span>
+            </span>
+            <span class="memo-acc-count ${st.pill}" data-count>${count}</span>
+            <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+        </button>
+        <div class="memo-acc-panel"><div class="memo-acc-inner">
+            <div class="space-y-2">${memos.map(memoRowHtml).join('')}</div>
+        </div></div>
+    </div>`;
+}
+
+function setMemoAccOpen(acc, open) {
+    if (!acc) return;
+    acc.classList.toggle('open', !!open);
+    const btn = acc.querySelector('.memo-acc-btn');
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function toggleMemoAcc(btn) {
+    const acc = btn.closest('.memo-acc');
+    if (acc) setMemoAccOpen(acc, !acc.classList.contains('open'));
+}
+
+function _setMemoAccCount(accId, n) {
+    const el = document.querySelector('#' + accId + ' [data-count]');
+    if (el) el.textContent = n;
+}
+
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
+// While searching, every group with a hit is force-opened and empty groups are
+// hidden entirely. Clearing the box restores the default open/closed state.
+let _memoAccStateBeforeSearch = null;
+
 function filterMemos(q) {
     const term = q.trim().toLowerCase();
     const clearBtn = document.getElementById('memos-search-clear');
     if (clearBtn) clearBtn.classList.toggle('hidden', !term);
 
-    const rows = document.querySelectorAll('#memos .memo-row');
+    const groups = document.querySelectorAll('#memos .memo-acc');
+
+    // Remember which dropdowns were open before the first keystroke
+    if (term && !_memoAccStateBeforeSearch) {
+        _memoAccStateBeforeSearch = {};
+        groups.forEach((g, i) => { _memoAccStateBeforeSearch[g.id || i] = g.classList.contains('open'); });
+    }
+
     let visible = 0;
-    rows.forEach(function(row) {
-        const match = !term || row.dataset.name.includes(term);
-        row.style.display = match ? '' : 'none';
-        if (match) visible++;
+    groups.forEach(function(group, i) {
+        let groupHits = 0;
+        group.querySelectorAll('.memo-row').forEach(function(row) {
+            const match = !term || row.dataset.name.includes(term);
+            row.style.display = match ? '' : 'none';
+            if (match) groupHits++;
+        });
+        visible += groupHits;
+
+        const countEl = group.querySelector('[data-count]');
+        if (countEl && term) countEl.textContent = groupHits;
+
+        if (term) {
+            group.classList.toggle('hidden', groupHits === 0);
+            setMemoAccOpen(group, groupHits > 0);
+        } else {
+            group.classList.remove('hidden');
+            const total = group.querySelectorAll('.memo-row').length;
+            if (countEl) countEl.textContent = total;
+            if (_memoAccStateBeforeSearch) {
+                setMemoAccOpen(group, !!_memoAccStateBeforeSearch[group.id || i]);
+            }
+        }
     });
+
+    if (!term) _memoAccStateBeforeSearch = null;
 
     const noResults = document.getElementById('memos-no-results');
     if (noResults) {
