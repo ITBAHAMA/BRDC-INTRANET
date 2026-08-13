@@ -8266,6 +8266,57 @@ function openPlannerDay(dayIdx, day, taskStates, c) {
 
 // ─── DEPT MEMOS FROM SUPABASE STORAGE ─────────────────────────────────────────
 const SUPA_STORAGE_BASE = 'https://ryzucipineonaytxotuu.supabase.co/storage/v1/object/public/MEMOS';
+const MEMO_BUCKET = 'MEMOS';
+
+// Columns to select for memo lists — deliberately EXCLUDES data_url so we never
+// pull megabytes of base64 just to render a list.
+const MEMO_LIST_COLS = 'id,title,dept,description,filename,storage_path,uploaded_by,uploaded_at';
+
+// Build a safe storage path: uploads/<dept>/<timestamp>-<sanitised name>.pdf
+function _memoStoragePath(dept, filename) {
+    const safe = (filename || 'memo.pdf')
+        .replace(/[^\w.\- ]+/g, '')      // strip anything odd
+        .replace(/\s+/g, '_')
+        .slice(-120);                     // keep it short
+    return `uploads/${(dept || 'all').toLowerCase()}/${Date.now()}-${safe}`;
+}
+
+// Public URL for a stored memo
+function _memoPublicUrl(path) {
+    if (!path) return '';
+    const { data } = SUPA.storage.from(MEMO_BUCKET).getPublicUrl(path);
+    return (data && data.publicUrl) || '';
+}
+
+// Resolve a memo row to a usable href.
+// New rows use storage_path; old rows still carry a base64 data_url.
+function _memoHref(m) {
+    if (m.storage_path) return _memoPublicUrl(m.storage_path);
+    if (m.data_url)     return m.data_url;   // legacy base64 fallback
+    return '';
+}
+
+// Upload a PDF to the MEMOS bucket. Returns { path } or { error }.
+async function _uploadMemoFile(file, dept) {
+    const path = _memoStoragePath(dept, file.name);
+    const { error } = await SUPA.storage
+        .from(MEMO_BUCKET)
+        .upload(path, file, { contentType: 'application/pdf', upsert: false });
+    if (error) return { error };
+    return { path };
+}
+
+// Legacy rows have no storage_path, so the list query must still be able to
+// render them. Fetch data_url only for the rows that actually need it.
+async function _hydrateLegacyMemos(rows) {
+    const legacy = rows.filter(r => !r.storage_path).map(r => r.id);
+    if (!legacy.length) return rows;
+    const { data } = await SUPA.from('admin_memos').select('id,data_url').in('id', legacy);
+    const map = {};
+    (data || []).forEach(r => { map[r.id] = r.data_url; });
+    rows.forEach(r => { if (!r.storage_path && map[r.id]) r.data_url = map[r.id]; });
+    return rows;
+}
 
 // HR 2026 memos — visible to ALL departments
 const HR_MEMOS_2026 = [
@@ -9509,26 +9560,32 @@ async function submitITDeptPDF() {
     const file  = fileInput && fileInput.files[0];
     if (!title) { _itdeptPDFMsg('error', 'Please enter a report title.'); return; }
     if (!file)  { _itdeptPDFMsg('error', 'Please select a PDF file to upload.'); return; }
-    _itdeptPDFMsg('info', 'Reading file…');
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const user = window.__brdcUser || {};
-        const { error } = await SUPA.from('admin_memos').insert({
-            title, dept: 'it', description: desc || null,
-            filename: file.name,
-            data_url: e.target.result,
-            uploaded_by: user.name || user.username || 'IT Staff'
-        });
-        if (error) { _itdeptPDFMsg('error', 'Upload failed: ' + error.message); return; }
-        _itdeptPDFMsg('success', '✓ Report uploaded successfully!');
-        document.getElementById('itdept-pdf-title').value = '';
-        document.getElementById('itdept-pdf-desc').value  = '';
-        fileInput.value = '';
-        const nameEl = document.getElementById('itdept-pdf-filename');
-        if (nameEl) nameEl.classList.add('hidden');
-    };
-    reader.onerror = function() { _itdeptPDFMsg('error', 'Failed to read file. Please try again.'); };
-    reader.readAsDataURL(file);
+
+    _itdeptPDFMsg('info', 'Uploading file to storage…');
+    const up = await _uploadMemoFile(file, 'it');
+    if (up.error) { _itdeptPDFMsg('error', 'Upload failed: ' + up.error.message); return; }
+
+    _itdeptPDFMsg('info', 'Saving record…');
+    const user = window.__brdcUser || {};
+    const { error } = await SUPA.from('admin_memos').insert({
+        title, dept: 'it', description: desc || null,
+        filename: file.name,
+        storage_path: up.path,
+        uploaded_by: user.name || user.username || 'IT Staff'
+    });
+
+    if (error) {
+        await SUPA.storage.from(MEMO_BUCKET).remove([up.path]);
+        _itdeptPDFMsg('error', 'Upload failed: ' + error.message);
+        return;
+    }
+
+    _itdeptPDFMsg('success', '✓ Report uploaded successfully!');
+    document.getElementById('itdept-pdf-title').value = '';
+    document.getElementById('itdept-pdf-desc').value  = '';
+    fileInput.value = '';
+    const nameEl = document.getElementById('itdept-pdf-filename');
+    if (nameEl) nameEl.classList.add('hidden');
 }
 
 function _itdeptPDFMsg(type, text) {
@@ -11366,7 +11423,7 @@ function handleMemoFile(input) {
     _memoMsg('', '');
 }
 
-function submitMemoUpload() {
+async function submitMemoUpload() {
     const title = document.getElementById('memo-title').value.trim();
     const dept  = document.getElementById('memo-dept').value;
     const desc  = document.getElementById('memo-desc').value.trim();
@@ -11375,26 +11432,37 @@ function submitMemoUpload() {
     if (!title)  { _memoMsg('error', 'Please enter a memo title.'); return; }
     if (!dept)   { _memoMsg('error', 'Please select a target department.'); return; }
     if (!file)   { _memoMsg('error', 'Please select a PDF file to upload.'); return; }
-    _memoMsg('info', 'Reading file…');
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const { error } = await SUPA.from('admin_memos').insert({
-            title, dept, description: desc||null,
-            filename: file.name,
-            data_url: e.target.result,
-            uploaded_by: (window.__brdcUser && window.__brdcUser.name) || 'Admin'
-        });
-        if (error) { _memoMsg('error', 'Upload failed: ' + error.message); return; }
-        _memoMsg('success', '✓ Memo published successfully!');
-        document.getElementById('memo-title').value = '';
-        document.getElementById('memo-dept').value = '';
-        document.getElementById('memo-desc').value = '';
-        fileInput.value = '';
-        document.getElementById('memo-file-name').classList.add('hidden');
-        renderAdminMemos();
-    };
-    reader.onerror = function() { _memoMsg('error', 'Failed to read file. Please try again.'); };
-    reader.readAsDataURL(file);
+
+    _memoMsg('info', 'Uploading file to storage…');
+
+    // 1. Upload the PDF into the MEMOS bucket
+    const up = await _uploadMemoFile(file, dept);
+    if (up.error) { _memoMsg('error', 'Upload failed: ' + up.error.message); return; }
+
+    // 2. Save only metadata + the storage path in the table
+    _memoMsg('info', 'Saving memo record…');
+    const { error } = await SUPA.from('admin_memos').insert({
+        title, dept, description: desc || null,
+        filename: file.name,
+        storage_path: up.path,
+        uploaded_by: (window.__brdcUser && window.__brdcUser.name) || 'Admin'
+    });
+
+    if (error) {
+        // Roll back the orphaned file so storage doesn't collect junk
+        await SUPA.storage.from(MEMO_BUCKET).remove([up.path]);
+        _memoMsg('error', 'Upload failed: ' + error.message);
+        return;
+    }
+
+    _memoMsg('success', '✓ Memo published successfully!');
+    document.getElementById('memo-title').value = '';
+    document.getElementById('memo-dept').value = '';
+    document.getElementById('memo-desc').value = '';
+    fileInput.value = '';
+    document.getElementById('memo-file-name').classList.add('hidden');
+    renderAdminMemos();
+    renderDeptMemos();
 }
 
 function _memoMsg(type, text) {
@@ -11413,10 +11481,11 @@ async function renderAdminMemos() {
     if (!list) return;
     list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Loading…</p>';
     const filter = (document.getElementById('manage-dept-filter') || {}).value || 'all';
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
+    let q = SUPA.from('admin_memos').select(MEMO_LIST_COLS).order('uploaded_at', { ascending: false });
     if (filter !== 'all') q = q.or(`dept.eq.${filter},dept.eq.all`);
     const { data: shown, error } = await q;
     if (error || !shown || !shown.length) { list.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No memos found.</p>'; return; }
+    await _hydrateLegacyMemos(shown);
     const deptLabel = { all:'All Departments', it:'IT', hr:'HR', accounting:'Accounting', purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels', neobros:'Neobros', panpacific:'PanPacific' };
     list.innerHTML = shown.map(m => {
         const date = new Date(m.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
@@ -11432,7 +11501,7 @@ async function renderAdminMemos() {
                 </div>
             </div>
             <div class="flex gap-2 flex-shrink-0">
-                <a href="${m.data_url}" download="${m.filename}" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-download-simple"></i> Download</a>
+                <a href="${_memoHref(m)}" download="${m.filename}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-download-simple"></i> Download</a>
                 <button onclick="deleteMemo(${m.id})" class="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition-colors"><i class="ph-fill ph-trash"></i> Delete</button>
             </div>
         </div>`;
@@ -11441,6 +11510,11 @@ async function renderAdminMemos() {
 
 async function deleteMemo(id) {
     if (!confirm('Delete this memo? This cannot be undone.')) return;
+    // Remove the stored file first so we don't orphan it in the bucket
+    const { data: row } = await SUPA.from('admin_memos').select('storage_path').eq('id', id).single();
+    if (row && row.storage_path) {
+        await SUPA.storage.from(MEMO_BUCKET).remove([row.storage_path]);
+    }
     await SUPA.from('admin_memos').delete().eq('id', id);
     renderAdminMemos();
     renderDeptMemos(); // keep dashboard in sync
@@ -11456,13 +11530,14 @@ async function renderDeptMemos() {
     const userDept = user.dept.toLowerCase();
     const isAdmin  = user.isAdmin;
     // Admins see all memos; employees see only their dept + 'all'
-    let q = SUPA.from('admin_memos').select('*').order('uploaded_at', { ascending: false });
+    let q = SUPA.from('admin_memos').select(MEMO_LIST_COLS).order('uploaded_at', { ascending: false });
     if (!isAdmin) q = q.or(`dept.eq.${userDept},dept.eq.all`);
     const { data: relevant, error } = await q;
     if (error || !relevant || !relevant.length) {
         tile.classList.add('hidden');
         return;
     }
+    await _hydrateLegacyMemos(relevant);
     tile.classList.remove('hidden');
     // Update badge count
     if (badge) {
@@ -11483,7 +11558,7 @@ async function renderDeptMemos() {
                     <span class="text-[10px] text-gray-400">${date} · by ${m.uploaded_by}</span>
                 </div>
             </div>
-            <a href="${m.data_url}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"><i class="ph-fill ph-download-simple"></i> Open</a>
+            <a href="${_memoHref(m)}" target="_blank" rel="noopener" class="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"><i class="ph-fill ph-download-simple"></i> Open</a>
         </div>`;
     }).join('');
 }
