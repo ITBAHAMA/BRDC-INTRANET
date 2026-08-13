@@ -8347,6 +8347,22 @@ const DEPT_MEMOS = {
     accounting: [
         { name: 'Memo - Month-End Closing Procedures', file: 'ACCOUNTING MEMOS/Memo - Month-End Closing Procedures.pdf', size: '—', date: 'Jun 25, 2026', tag: 'Policy' },
     ],
+    smartfuels: [
+        { name: 'Uniforms',                                  file: 'SMARTFUELS MEMOS/Uniforms.pdf',                                  size: '686 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Travel Policy Guideline - Vehicle',         file: 'SMARTFUELS MEMOS/Travel Policy Guideline - Vehicle.pdf',         size: '269 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'SmartFuels Vehicle Maintenance',            file: 'SMARTFUELS MEMOS/SmartFuels Vehicle Maintenance.pdf',            size: '213 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Security Protocols for CCTV Cameras',       file: 'SMARTFUELS MEMOS/Security Protocols for CCTV Cameras.pdf',       size: '134 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Request for CCTV Footage Guidelines',       file: 'SMARTFUELS MEMOS/Request for CCTV Footage Guidelines.pdf',       size: '159 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Tip Box Guidelines Memo',                   file: 'SMARTFUELS MEMOS/Tip Box Guidelines Memo.pdf',                   size: '283 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Smart Service Incentive Program',           file: 'SMARTFUELS MEMOS/Smart Service Incentive Program.pdf',           size: '221 KB', date: 'Aug 13, 2026', tag: 'Allowance' },
+        { name: 'Shift Huddle Memo',                         file: 'SMARTFUELS MEMOS/Shift Huddle Memo.pdf',                         size: '154 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Shift Huddle Explanation',                  file: 'SMARTFUELS MEMOS/Shift Huddle Explanation.pdf',                  size: '205 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Revised Maya and POS Operations',           file: 'SMARTFUELS MEMOS/Revised Maya and POS Operations.pdf',           size: '206 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Updated Guidelines for DSR Reports Submission', file: 'SMARTFUELS MEMOS/Updated Guidelines for DSR Reports Submission.pdf', size: '135 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Submission of DAR',                         file: 'SMARTFUELS MEMOS/Submission of DAR.pdf',                         size: '136 KB', date: 'Aug 13, 2026', tag: 'Policy' },
+        { name: 'Reminder - Changes in Approvers for Requests', file: 'SMARTFUELS MEMOS/Reminder - Changes in Approvers for Requests.pdf', size: '330 KB', date: 'Aug 13, 2026', tag: 'Announcement' },
+        { name: 'SF Operations - December 31 2023',          file: 'SMARTFUELS MEMOS/SF Operations - December 31 2023.pdf',          size: '87 KB',  date: 'Aug 13, 2026', tag: 'Announcement' },
+    ],
 };
 
 const TAG_COLORS = {
@@ -8398,22 +8414,51 @@ function loadDeptMemos() {
     const hrList = document.getElementById('hr-memos-list');
     if (hrList) hrList.innerHTML = HR_MEMOS.map(memoRowHtml).join('');
 
-    // Render dept-specific memos
+    // Render dept-specific memos.
+    // Admins see EVERY department's memos (tagged by dept); everyone else sees their own.
     const deptSection = document.getElementById('dept-memos-section');
     const deptGrid    = document.getElementById('memos-grid');
     const deptTitle   = document.getElementById('dept-memos-title');
-    const deptMemos   = DEPT_MEMOS[dept];
-    if (deptMemos && deptMemos.length && deptSection && deptGrid) {
+
+    let deptMemos = [];
+    let titleText = '';
+    let labelSuffix = '';
+
+    if (user.isAdmin) {
+        // Flatten all departments, tagging each row with its dept
+        Object.keys(DEPT_MEMOS).forEach(k => {
+            (DEPT_MEMOS[k] || []).forEach(m => deptMemos.push({ ...m, _dept: k }));
+        });
+        titleText   = 'All Department Memos';
+        labelSuffix = deptMemos.length ? ' + All Depts' : '';
+    } else {
+        deptMemos   = (DEPT_MEMOS[dept] || []).map(m => ({ ...m, _dept: dept }));
+        titleText   = dept.toUpperCase() + ' Department Memos';
+        labelSuffix = deptMemos.length ? ' + ' + dept.toUpperCase() + ' Dept' : '';
+    }
+
+    if (deptMemos.length && deptSection && deptGrid) {
         deptSection.classList.remove('hidden');
-        const deptLabel = dept.toUpperCase() + ' Department Memos';
-        if (deptTitle) deptTitle.textContent = deptLabel;
-        deptGrid.innerHTML = deptMemos.map(memoRowHtml).join('');
+        if (deptTitle) deptTitle.textContent = titleText;
+        // Group by dept so admins get a readable, sectioned list
+        if (user.isAdmin) {
+            const groups = {};
+            deptMemos.forEach(m => { (groups[m._dept] = groups[m._dept] || []).push(m); });
+            deptGrid.innerHTML = Object.keys(groups).sort().map(k => `
+                <div class="col-span-full mt-3 first:mt-0">
+                    <p class="text-xs font-black uppercase tracking-wider text-gray-400 mb-1.5">${k}</p>
+                </div>
+                ${groups[k].map(memoRowHtml).join('')}
+            `).join('');
+        } else {
+            deptGrid.innerHTML = deptMemos.map(memoRowHtml).join('');
+        }
     } else if (deptSection) {
         deptSection.classList.add('hidden');
     }
 
-    const total = HR_MEMOS_2026.length + HR_MEMOS.length + (deptMemos ? deptMemos.length : 0);
-    if (label) label.textContent = `${total} memo${total !== 1 ? 's' : ''} available — HR 2026 + HR 2025${deptMemos ? ' + ' + dept.toUpperCase() + ' Dept' : ''}`;
+    const total = HR_MEMOS_2026.length + HR_MEMOS.length + deptMemos.length;
+    if (label) label.textContent = `${total} memo${total !== 1 ? 's' : ''} available — HR 2026 + HR 2025${labelSuffix}`;
 }
 
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
