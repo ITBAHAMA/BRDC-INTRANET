@@ -1239,6 +1239,11 @@
         document.getElementById('auth-screen').classList.add('hidden');
         window.__brdcUser = session;
         if (!session.isAdmin) window.__brdcAutoDept = session.dept;
+        // Show/hide department-restricted Essential Tools tiles once the DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof applyToolVisibility === 'function') applyToolVisibility();
+        });
+        setTimeout(() => { if (typeof applyToolVisibility === 'function') applyToolVisibility(); }, 400);
     }
 
     // ── LOADING STATE ON BUTTONS ───────────────────────────────────────────
@@ -2882,6 +2887,19 @@
                     </div>
                     <span class="text-sm font-bold text-gray-800">PayPro</span>
                     <span class="text-xs text-gray-400">M. Lhuillier</span>
+                </a>
+
+                <!-- PURCHASING ONLY — hidden for every other department -->
+                <a href="https://trello.com/u/mgpante/boards" target="_blank" rel="noopener"
+                   data-tool-dept="purchasing"
+                   class="bento-tile flex flex-col items-center justify-center p-6 gap-3 hover:border-brand-green hover:bg-brand-light/30 transition-all group text-center relative"
+                   style="display:none;">
+                    <span class="absolute top-2 right-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-indigo-100 text-indigo-600">Purchasing</span>
+                    <div class="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-kanban text-3xl text-sky-600"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-800">Trello</span>
+                    <span class="text-xs text-gray-400">Purchasing Boards</span>
                 </a>
             </div>
         </section>
@@ -7138,8 +7156,24 @@ document.getElementById('pw-submit').addEventListener('click', submitDeptPasswor
 document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitDeptPassword(); });
 
 // ─── APPLY DEPARTMENT ─────────────────────────────────────────────────────────
+// ─── DEPARTMENT-RESTRICTED TOOLS ──────────────────────────────────────────────
+// Any Essential Tools tile carrying data-tool-dept="x" (or "x,y") is shown only
+// to users in that department. Admins always see everything.
+function applyToolVisibility() {
+    const user = window.__brdcUser || {};
+    const myDept = (user.dept || '').toLowerCase().trim();
+    document.querySelectorAll('[data-tool-dept]').forEach(el => {
+        const allowed = (el.dataset.toolDept || '')
+            .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const canSee = user.isAdmin || allowed.includes(myDept);
+        el.style.display = canSee ? '' : 'none';
+    });
+}
+window.applyToolVisibility = applyToolVisibility;
+
 function applyDepartment(dept) {
     currentDept = dept;
+    applyToolVisibility();   // refresh dept-restricted tool tiles
     const data = DEPT_DATA[dept];
     if (!data) return;
 
