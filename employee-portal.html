@@ -4740,6 +4740,46 @@
         </div>
     </div>
 </div>
+<!-- ═══ GLOBAL SEARCH OVERLAY (Ctrl+K) ═══════════════════════════════════════ -->
+<div id="global-search-overlay" onclick="if(event.target===this) closeGlobalSearch()">
+    <div id="global-search-box" onclick="event.stopPropagation()">
+
+        <!-- Search input row -->
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #f3f4f6;">
+            <i class="ph-bold ph-magnifying-glass" style="font-size:18px;color:#9ca3af;flex-shrink:0;"></i>
+            <input id="global-search-input"
+                   type="text"
+                   autocomplete="off"
+                   spellcheck="false"
+                   placeholder="Search memos, people, announcements, systems…"
+                   oninput="globalSearch(this.value)"
+                   onkeydown="gsHandleKey(event)">
+            <button onclick="closeGlobalSearch()"
+                    title="Close (Esc)"
+                    style="flex-shrink:0;border:1px solid #e5e7eb;background:#f9fafb;color:#6b7280;font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;cursor:pointer;letter-spacing:0.04em;">ESC</button>
+        </div>
+
+        <!-- Suggestion / recent-search chips -->
+        <div id="gs-suggestions"></div>
+
+        <!-- Results -->
+        <div id="global-search-results" style="max-height:min(420px,60vh);overflow-y:auto;padding:6px 0;">
+            <div style="text-align:center;padding:32px 16px;color:#9ca3af;font-size:13px;">
+                <i class="ph-fill ph-magnifying-glass" style="font-size:32px;display:block;margin:0 auto 10px;"></i>
+                Start typing to search&hellip;
+            </div>
+        </div>
+
+        <!-- Footer hint -->
+        <div style="display:flex;align-items:center;gap:14px;padding:8px 16px;border-top:1px solid #f3f4f6;background:#fafafa;font-size:11px;color:#9ca3af;">
+            <span><b style="color:#6b7280;">&uarr;&darr;</b> navigate</span>
+            <span><b style="color:#6b7280;">&crarr;</b> open</span>
+            <span><b style="color:#6b7280;">esc</b> close</span>
+            <span style="margin-left:auto;"><b style="color:#6b7280;">Ctrl K</b> anytime</span>
+        </div>
+    </div>
+</div>
+
 <!-- Credentials Password Modal -->
 <div id="cred-pw-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -9833,6 +9873,13 @@ function _ringBell() {
     btn.classList.add('ringing');
     btn.addEventListener('animationend', () => btn.classList.remove('ringing'), { once: true });
 }
+// The bell markup calls toggleBdayBellPopup/closeBdayBellPopup — alias them here.
+window.toggleBdayBellPopup = function() { toggleBdayPopup(); };
+window.closeBdayBellPopup  = function() {
+    const p = document.getElementById('bday-bell-popup');
+    if (p) p.style.display = 'none';
+};
+
 function toggleBdayPopup() {
     const popup = document.getElementById('bday-bell-popup');
     if (!popup) return;
@@ -9892,6 +9939,7 @@ document.addEventListener('click', function(e) {
 // ─── GLOBAL SEARCH ────────────────────────────────────────────────────────────
 function openGlobalSearch() {
     const ov = document.getElementById('global-search-overlay');
+    if (!ov) return;
     ov.classList.add('open');
     _gsFocusIdx = -1;
     setTimeout(() => {
@@ -9902,6 +9950,7 @@ function openGlobalSearch() {
 }
 function closeGlobalSearch() {
     const ov = document.getElementById('global-search-overlay');
+    if (!ov) return;
     ov.classList.remove('open');
     const inp = document.getElementById('global-search-input');
     if (inp) inp.value = '';
@@ -11802,6 +11851,73 @@ window.__applyCmgPositionBadge = function(position) {
         sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
     }
 };
+// ─── GENERIC POSITION SELECTOR ────────────────────────────────────────────────
+// Used by business units that don't need their own goals card:
+// Exelhaul, La Ferme, Neobros, Pan Pacific, Toilena, U-Hotels.
+// Mirrors selectAcctPosition / selectCmgPosition: persist → close modal →
+// badge → greeting → re-render dashboard → tour.
+window.__applyGenericPositionBadge = function(deptKey, position) {
+    const badgeId = deptKey + '-position-badge';
+    const existing = document.getElementById(badgeId);
+    if (existing) existing.remove();
+    const sidebarLabel = document.getElementById('sidebar-dept-label');
+    if (!sidebarLabel || !sidebarLabel.parentNode) return;
+    const badge = document.createElement('div');
+    badge.id = badgeId;
+    badge.style.cssText = 'margin-top:4px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;padding:4px 10px;border-radius:7px;';
+    badge.textContent = '🏢 ' + position;
+    sidebarLabel.parentNode.insertBefore(badge, sidebarLabel.nextSibling);
+};
+
+window.__selectGenericPosition = function(deptKey, position) {
+    // 1. Persist to session
+    try {
+        const raw = localStorage.getItem('brdc_portal_session');
+        if (raw) {
+            const sess = JSON.parse(raw);
+            sess.position = position;
+            localStorage.setItem('brdc_portal_session', JSON.stringify(sess));
+        }
+    } catch (e) { /* session unreadable — carry on, DB is the source of truth */ }
+
+    if (window.__brdcUser) window.__brdcUser.position = position;
+
+    // 2. Persist to Supabase
+    const user = window.__brdcUser;
+    if (user && user.username && typeof SUPA !== 'undefined') {
+        SUPA.from('profiles').update({ position: position }).eq('username', user.username).then(() => {});
+    }
+
+    // 3. Close the modal
+    const posModal = document.getElementById(deptKey + '-position-modal');
+    if (posModal) posModal.classList.add('hidden');
+
+    // 4. Badge + greeting
+    window.__applyGenericPositionBadge(deptKey, position);
+    if (typeof window.__updateGreetingPosition === 'function') {
+        window.__updateGreetingPosition(position);
+    }
+
+    // 5. Render the dashboard (may have been skipped by an early return)
+    if (window.__brdcAutoDept && typeof applyDepartment === 'function') {
+        applyDepartment(window.__brdcAutoDept);
+    }
+
+    // 6. First-run tour
+    if (!localStorage.getItem('brdc_portal_tour_done')) {
+        const tw = document.getElementById('tour-welcome');
+        if (tw) tw.classList.remove('hidden');
+    }
+};
+
+// Wire up the six business units that were calling undefined functions
+window.selectExelhaulPosition   = function(p) { window.__selectGenericPosition('exelhaul',   p); };
+window.selectLafermePosition    = function(p) { window.__selectGenericPosition('laferme',    p); };
+window.selectNeobrosPosition    = function(p) { window.__selectGenericPosition('neobros',    p); };
+window.selectPanpacificPosition = function(p) { window.__selectGenericPosition('panpacific', p); };
+window.selectToilenaPosition    = function(p) { window.__selectGenericPosition('toilena',    p); };
+window.selectUhotelsPosition    = function(p) { window.__selectGenericPosition('uhotels',    p); };
+
 window.selectCmgPosition = function(position) {
     const raw = localStorage.getItem('brdc_portal_session');
     if (raw) { const sess = JSON.parse(raw); sess.position = position; localStorage.setItem('brdc_portal_session', JSON.stringify(sess)); }
