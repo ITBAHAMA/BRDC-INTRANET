@@ -1,0 +1,23 @@
+INSERT INTO storage.buckets (id, name, public, file_size_limit) VALUES
+  ('AVATARS', 'AVATARS', true, 104857600),
+  ('MEMOS',   'MEMOS',   true, 104857600)
+ON CONFLICT (id) DO UPDATE SET public = true, file_size_limit = 104857600;
+
+DROP POLICY IF EXISTS "portal_storage_read"   ON storage.objects;
+DROP POLICY IF EXISTS "portal_storage_insert" ON storage.objects;
+DROP POLICY IF EXISTS "portal_storage_update" ON storage.objects;
+DROP POLICY IF EXISTS "portal_storage_delete" ON storage.objects;
+
+CREATE POLICY "portal_storage_read"   ON storage.objects FOR SELECT
+  USING (bucket_id IN ('MEMOS','AVATARS','VIDEOS'));
+CREATE POLICY "portal_storage_insert" ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id IN ('MEMOS','AVATARS','VIDEOS'));
+CREATE POLICY "portal_storage_update" ON storage.objects FOR UPDATE
+  USING (bucket_id IN ('MEMOS','AVATARS','VIDEOS'))
+  WITH CHECK (bucket_id IN ('MEMOS','AVATARS','VIDEOS'));
+CREATE POLICY "portal_storage_delete" ON storage.objects FOR DELETE
+  USING (bucket_id IN ('MEMOS','AVATARS','VIDEOS'));
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url text;
+
+SELECT id, public FROM storage.buckets ORDER BY id;
