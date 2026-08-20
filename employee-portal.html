@@ -7681,6 +7681,47 @@ async function loadDirectoryCounts() {
     } catch(e) { /* silently ignore */ }
 }
 
+// ─── DIRECTORY PHOTOS ─────────────────────────────────────────────────────────
+// The Company Directory mixes hard-coded cards (in the HTML) with cards injected
+// from directory_entries. This runs over BOTH: it reads each card's name and
+// swaps the initials circle for the employee's uploaded photo when one exists.
+async function applyDirectoryPhotos() {
+    if (typeof SUPA === 'undefined') return;
+    const { data, error } = await SUPA.from('profiles').select('full_name,avatar_url');
+    if (error || !data) return;
+
+    const photoMap = {};
+    data.forEach(p => {
+        if (p.full_name && p.avatar_url) photoMap[p.full_name.trim().toLowerCase()] = p.avatar_url;
+    });
+    if (!Object.keys(photoMap).length) return;
+
+    // Every card in any department grid, plus the overflow container
+    const cards = document.querySelectorAll(
+        '[id^="dir-grid-"] > div, #dir-db-entries div.flex.items-start'
+    );
+
+    cards.forEach(card => {
+        const nameEl = card.querySelector('p.font-bold');
+        if (!nameEl) return;
+
+        const url = photoMap[nameEl.textContent.trim().toLowerCase()];
+        if (!url) return;
+
+        const initialsEl = card.firstElementChild;
+        if (!initialsEl || initialsEl.tagName === 'IMG') return;   // already swapped
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = nameEl.textContent.trim();
+        img.className = 'w-12 h-12 rounded-full object-cover flex-shrink-0 border border-gray-100';
+        // If the photo 404s, put the initials circle back
+        img.onerror = () => { try { img.replaceWith(initialsEl); } catch (e) {} };
+        initialsEl.replaceWith(img);
+    });
+}
+window.applyDirectoryPhotos = applyDirectoryPhotos;
+
 async function renderPublicDirectoryEntries() {
     // Map dept keys (as saved in directory_entries) to static grid element IDs
     // Values match the <option value="..."> in the Directory Editor dropdown (always lowercase)
@@ -7764,6 +7805,9 @@ async function renderPublicDirectoryEntries() {
             </div>`);
         }
     });
+
+    // Swap initials for uploaded photos across every card, static and dynamic
+    applyDirectoryPhotos();
 }
 
 // ─── MEMO ACKNOWLEDGMENT ─────────────────────────────────────────────────────
@@ -8922,6 +8966,7 @@ async function previewAvatar(input) {
 
     // 5. Refresh the directory if it's already rendered
     if (typeof renderPublicDirectoryEntries === 'function') renderPublicDirectoryEntries();
+    if (typeof applyDirectoryPhotos === 'function') applyDirectoryPhotos();
 }
 
 /* Save profile to Supabase */
