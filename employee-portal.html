@@ -7686,8 +7686,19 @@ async function renderPublicDirectoryEntries() {
     const overflow = document.getElementById('dir-db-entries');
     if (overflow) overflow.innerHTML = '';
 
-    const { data: entries, error } = await SUPA.from('directory_entries').select('*').order('dept').order('name');
-    if (error || !entries || !entries.length) return;
+    // Pull directory entries AND profile photos in parallel
+    const [dirRes, profRes] = await Promise.all([
+        SUPA.from('directory_entries').select('*').order('dept').order('name'),
+        SUPA.from('profiles').select('full_name,avatar_url')
+    ]);
+    const entries = dirRes.data;
+    if (dirRes.error || !entries || !entries.length) return;
+
+    // name (lowercased) → avatar URL, so a photo uploaded in Settings shows here
+    const photoMap = {};
+    (profRes.data || []).forEach(p => {
+        if (p.full_name && p.avatar_url) photoMap[p.full_name.trim().toLowerCase()] = p.avatar_url;
+    });
 
     // Group by dept
     const groups = {};
@@ -7703,8 +7714,16 @@ async function renderPublicDirectoryEntries() {
             const ini = _dirInitials(e.name);
             const emailLine = e.email ? `<a href="mailto:${e.email}" class="flex items-center gap-1 text-xs ${c.text} hover:underline truncate mb-0.5"><i class="ph-fill ph-envelope"></i> ${e.email}</a>` : '';
             const phoneLine = e.phone ? `<a href="viber://chat?number=${e.phone.replace(/[^+\d]/g,'')}" class="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800"><i class="ph-fill ph-phone"></i> ${e.phone} <span class="ml-1 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-600 text-[10px] font-semibold">Viber</span></a>` : '';
+            // Use the employee's uploaded photo when we have one, otherwise initials.
+            // onerror falls back to initials if the image 404s.
+            const photo = photoMap[(e.name || '').trim().toLowerCase()];
+            const avatarHtml = photo
+                ? `<img src="${photo}" alt="${e.name}"
+                       class="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-gray-100"
+                       onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-full ${c.bg} ${c.init} flex items-center justify-center flex-shrink-0 font-bold text-sm\\'>${ini}</div>'">`
+                : `<div class="w-12 h-12 rounded-full ${c.bg} ${c.init} flex items-center justify-center flex-shrink-0 font-bold text-sm">${ini}</div>`;
             return `<div data-db-entry="true" class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 ${c.hover} transition-colors bg-white">
-                <div class="w-12 h-12 rounded-full ${c.bg} ${c.init} flex items-center justify-center flex-shrink-0 font-bold text-sm">${ini}</div>
+                ${avatarHtml}
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-gray-900 text-sm">${e.name}</p>
                     <p class="text-xs text-gray-500 uppercase mb-1">${e.position||''}</p>
@@ -8763,15 +8782,25 @@ function settingsTab(tab) {
 /* Load profile data into the settings form */
 function loadSettingsProfile() {
     const user = window.__brdcUser || {};
-    // Avatar
+    // Avatar — prefer the URL stored on the profile, fall back to local cache
     const av = document.getElementById('settings-avatar');
-    const savedAvatar = localStorage.getItem('brdc-avatar-' + user.username);
+    const savedAvatar = user.avatar_url || localStorage.getItem('brdc-avatar-' + user.username);
     if (savedAvatar && av) av.src = savedAvatar;
     else if (av) av.src = `https://placehold.co/100x100/2A6E1F/FFFFFF?text=${encodeURIComponent((user.name||'?')[0].toUpperCase())}`;
     // Sidebar avatar sync
     document.querySelectorAll('img[alt="User Profile"]').forEach(img => {
         if (savedAvatar) img.src = savedAvatar;
     });
+    // Pull the authoritative photo from Supabase in the background
+    if (user.username && typeof SUPA !== 'undefined') {
+        SUPA.from('profiles').select('avatar_url').eq('username', user.username).single()
+            .then(({ data }) => {
+                if (!data || !data.avatar_url || data.avatar_url === savedAvatar) return;
+                user.avatar_url = data.avatar_url;
+                try { localStorage.setItem('brdc-avatar-' + user.username, data.avatar_url); } catch(e){}
+                _paintAvatar(data.avatar_url);
+            });
+    }
     // Display fields
     const nd = document.getElementById('settings-name-display');
     const ud = document.getElementById('settings-username-display');
@@ -8795,19 +8824,85 @@ function loadSettingsProfile() {
     if (nick) nick.value = localStorage.getItem('brdc-nickname-' + user.username) || '';
 }
 
-/* Avatar preview (client-side only, stored in localStorage as data URL) */
-function previewAvatar(input) {
+/* ─── AVATAR UPLOAD ───────────────────────────────────────────────────────────
+   Uploads to Supabase Storage → saves the URL on profiles.avatar_url → the
+   Company Directory picks it up automatically on next render.
+   localStorage is kept purely as an instant-paint cache. */
+const AVATAR_BUCKET = 'AVATARS';
+
+function _avatarPublicUrl(path) {
+    if (!path) return '';
+    const { data } = SUPA.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+    return (data && data.publicUrl) || '';
+}
+
+/* Paint a new avatar everywhere it appears on screen */
+function _paintAvatar(src) {
+    const av = document.getElementById('settings-avatar');
+    if (av) av.src = src;
+    document.querySelectorAll('img[alt="User Profile"]').forEach(img => img.src = src);
+}
+
+async function previewAvatar(input) {
     if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const user = window.__brdcUser || {};
+
+    if (!file.type.startsWith('image/')) {
+        _settingsMsg('settings-profile-msg', 'Please choose an image file.', false); input.value=''; return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        _settingsMsg('settings-profile-msg', 'Image must be under 5 MB.', false); input.value=''; return;
+    }
+    if (!user.username) {
+        _settingsMsg('settings-profile-msg', 'You must be signed in to change your photo.', false); return;
+    }
+
+    // 1. Instant local preview so the UI feels immediate
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const user = window.__brdcUser || {};
-        const src = e.target.result;
-        document.getElementById('settings-avatar').src = src;
-        document.querySelectorAll('img[alt="User Profile"]').forEach(img => img.src = src);
-        localStorage.setItem('brdc-avatar-' + user.username, src);
-        _settingsMsg('settings-profile-msg', '✓ Avatar updated!', true);
-    };
-    reader.readAsDataURL(input.files[0]);
+    reader.onload = e => _paintAvatar(e.target.result);
+    reader.readAsDataURL(file);
+
+    // 2. Upload to Storage — one stable path per user, overwritten on change
+    _settingsMsg('settings-profile-msg', 'Uploading photo…', true);
+    const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const path = `${user.username.toLowerCase()}.${ext}`;
+
+    const { error: upErr } = await SUPA.storage
+        .from(AVATAR_BUCKET)
+        .upload(path, file, { contentType: file.type, upsert: true });
+
+    if (upErr) {
+        _settingsMsg('settings-profile-msg', 'Upload failed: ' + upErr.message, false);
+        return;
+    }
+
+    // Cache-bust so the new image shows immediately instead of the CDN copy
+    const publicUrl = _avatarPublicUrl(path) + '?v=' + Date.now();
+
+    // 3. Save the URL on the profile — this is what the directory reads
+    const { error: dbErr } = await SUPA.from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('username', user.username);
+
+    if (dbErr) {
+        _settingsMsg('settings-profile-msg', 'Photo uploaded but not saved: ' + dbErr.message, false);
+        return;
+    }
+
+    // 4. Update session + local cache, repaint from the real URL
+    user.avatar_url = publicUrl;
+    try {
+        const raw = localStorage.getItem('brdc_portal_session');
+        if (raw) { const s = JSON.parse(raw); s.avatar_url = publicUrl; localStorage.setItem('brdc_portal_session', JSON.stringify(s)); }
+        localStorage.setItem('brdc-avatar-' + user.username, publicUrl);
+    } catch (e) { /* cache is best-effort */ }
+
+    _paintAvatar(publicUrl);
+    _settingsMsg('settings-profile-msg', '✓ Photo updated — it will show in the Company Directory.', true);
+
+    // 5. Refresh the directory if it's already rendered
+    if (typeof renderPublicDirectoryEntries === 'function') renderPublicDirectoryEntries();
 }
 
 /* Save profile to Supabase */
