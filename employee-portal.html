@@ -2564,7 +2564,7 @@
                          class="absolute inset-0 hidden flex-col items-center justify-center gap-3 text-center px-6 bg-black/90">
                         <i class="ph-fill ph-video-camera-slash text-4xl text-gray-500"></i>
                         <p class="text-sm text-gray-300 font-semibold">Orientation video is not available yet.</p>
-                        <p class="text-xs text-gray-500">Ask IT to upload it to the VIDEOS storage bucket.</p>
+                        <p class="text-xs text-gray-500">Expected at <code>videos/orientation.mp4</code> — ask IT to redeploy.</p>
                     </div>
                 </div>
             </div>
@@ -10089,14 +10089,14 @@ document.addEventListener('click', function(e) {
 // works. Browsers only permit autoplay when muted — hence the unmute button.
 const VIDEO_BUCKET = 'VIDEOS';
 
-// Tried in order — the first one that exists wins. Keeps the player working
-// whether the file was uploaded with the cleaned name or the original one.
+// The video ships with the site (videos/orientation.mp4), so it always works —
+// no Storage bucket, no policies, no sign-in. Supabase paths stay as fallbacks
+// in case the file is ever moved there instead.
+const ORIENTATION_LOCAL = 'videos/orientation.mp4';
 const ORIENTATION_CANDIDATES = [
     'orientation/Maligayang_Pagdating_sa_BRDC.mp4',
-    'orientation/Maligayang_Pagdating_sa_BRDC! (3).mp4',
-    'orientation/Maligayang_Pagdating_sa_BRDC!.mp4',
-    'Maligayang_Pagdating_sa_BRDC.mp4',
     'orientation/orientation.mp4',
+    'Maligayang_Pagdating_sa_BRDC.mp4',
 ];
 
 function _videoPublicUrl(path) {
@@ -10105,15 +10105,22 @@ function _videoPublicUrl(path) {
     return (data && data.publicUrl) || '';
 }
 
-// Probe each candidate with a HEAD request; return the first that responds 200
+// Try the bundled copy first, then any Supabase location
 async function _findOrientationVideo() {
+    const tryUrl = async url => {
+        if (!url) return null;
+        try { const r = await fetch(url, { method: 'HEAD' }); return r.ok ? url : null; }
+        catch (e) { return null; }
+    };
+
+    // 1. Shipped alongside the portal — relative to this page
+    const local = await tryUrl(ORIENTATION_LOCAL);
+    if (local) return local;
+
+    // 2. Supabase Storage fallbacks
     for (const path of ORIENTATION_CANDIDATES) {
-        const url = _videoPublicUrl(path);
-        if (!url) continue;
-        try {
-            const r = await fetch(url, { method: 'HEAD' });
-            if (r.ok) return url;
-        } catch (e) { /* network hiccup — try the next candidate */ }
+        const hit = await tryUrl(_videoPublicUrl(path));
+        if (hit) return hit;
     }
     return null;
 }
