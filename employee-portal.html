@@ -10087,8 +10087,17 @@ document.addEventListener('click', function(e) {
 // ─── ORIENTATION VIDEO ────────────────────────────────────────────────────────
 // Served from Supabase Storage so no Google sign-in is needed and real autoplay
 // works. Browsers only permit autoplay when muted — hence the unmute button.
-const VIDEO_BUCKET   = 'VIDEOS';
-const ORIENTATION_FILE = 'orientation/Maligayang_Pagdating_sa_BRDC.mp4';
+const VIDEO_BUCKET = 'VIDEOS';
+
+// Tried in order — the first one that exists wins. Keeps the player working
+// whether the file was uploaded with the cleaned name or the original one.
+const ORIENTATION_CANDIDATES = [
+    'orientation/Maligayang_Pagdating_sa_BRDC.mp4',
+    'orientation/Maligayang_Pagdating_sa_BRDC! (3).mp4',
+    'orientation/Maligayang_Pagdating_sa_BRDC!.mp4',
+    'Maligayang_Pagdating_sa_BRDC.mp4',
+    'orientation/orientation.mp4',
+];
 
 function _videoPublicUrl(path) {
     if (typeof SUPA === 'undefined') return '';
@@ -10096,16 +10105,33 @@ function _videoPublicUrl(path) {
     return (data && data.publicUrl) || '';
 }
 
-function initOrientationVideo() {
+// Probe each candidate with a HEAD request; return the first that responds 200
+async function _findOrientationVideo() {
+    for (const path of ORIENTATION_CANDIDATES) {
+        const url = _videoPublicUrl(path);
+        if (!url) continue;
+        try {
+            const r = await fetch(url, { method: 'HEAD' });
+            if (r.ok) return url;
+        } catch (e) { /* network hiccup — try the next candidate */ }
+    }
+    return null;
+}
+
+async function initOrientationVideo() {
     const vid   = document.getElementById('orientation-video');
     const errEl = document.getElementById('orientation-video-error');
     const btn   = document.getElementById('orientation-unmute');
-    if (!vid) return;
+    if (!vid || vid.dataset.initialised === '1') return;
+    vid.dataset.initialised = '1';
 
-    const url = _videoPublicUrl(ORIENTATION_FILE);
-    if (!url) return;
-    if (vid.dataset.loaded === url) return;   // already set up
-    vid.dataset.loaded = url;
+    const url = await _findOrientationVideo();
+    if (!url) {
+        if (errEl) { errEl.classList.remove('hidden'); errEl.classList.add('flex'); }
+        if (btn) btn.style.display = 'none';
+        vid.dataset.initialised = '';   // allow a retry on next visit
+        return;
+    }
     vid.src = url;
 
     // File missing / bucket not public → show a helpful message instead of a black box
