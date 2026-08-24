@@ -2638,15 +2638,6 @@
                     </div></div>
                 </div>
 
-                <!-- Memos uploaded through the Admin Panel -->
-                <div id="uploaded-memos-tile" class="bento-tile col-span-1 md:col-span-2 p-6 hidden">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <i class="ph-fill ph-cloud-arrow-up text-purple-500"></i> Uploaded Memos
-                        <span id="uploaded-memos-count" class="text-[10px] font-black bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full normal-case"></span>
-                    </h3>
-                    <div id="uploaded-memos-list" class="space-y-2"></div>
-                </div>
-
                 <!-- Department memos — one dropdown per department -->
                 <div id="dept-memos-section" class="col-span-1 md:col-span-2 space-y-6 hidden">
                     <div id="dept-memos-accordions" class="space-y-6"></div>
@@ -8872,12 +8863,10 @@ function memoRowHtml(m) {
 }
 
 // Memos uploaded via Admin Panel live in admin_memos — the hard-coded arrays
-// above don't know about them, so render them here too.
+// don't know about them, so they get appended into the HR 2026 accordion.
 async function loadUploadedMemos() {
-    const tile = document.getElementById('uploaded-memos-tile');
-    const list = document.getElementById('uploaded-memos-list');
-    const cnt  = document.getElementById('uploaded-memos-count');
-    if (!tile || !list) return 0;
+    const list = document.getElementById('hr-memos-2026-list');
+    if (!list) return 0;
 
     const user = window.__brdcUser || {};
     const dept = (user.dept || '').toLowerCase().trim();
@@ -8886,7 +8875,13 @@ async function loadUploadedMemos() {
     if (!user.isAdmin && dept) q = q.or(`dept.eq.${dept},dept.eq.all`);
 
     const { data, error } = await q;
-    if (error || !data || !data.length) { tile.classList.add('hidden'); return 0; }
+
+    // Always refresh the count so it stays accurate even with zero uploads
+    const base = (typeof HR_MEMOS_2026 !== 'undefined' ? HR_MEMOS_2026.length : 0);
+    if (error || !data || !data.length) {
+        _setMemoAccCount('memo-acc-hr2026', base);
+        return 0;
+    }
 
     await _hydrateLegacyMemos(data);
 
@@ -8894,7 +8889,7 @@ async function loadUploadedMemos() {
         purchasing:'Purchasing', auditor:'Auditor', cmg:'CMG', smartfuels:'SmartFuels',
         neobros:'Neobros', panpacific:'PanPacific' };
 
-    list.innerHTML = data.map(m => {
+    const html = data.map(m => {
         const href = _memoHref(m);
         const date = m.uploaded_at
             ? new Date(m.uploaded_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' })
@@ -8922,8 +8917,9 @@ async function loadUploadedMemos() {
         </div>`;
     }).join('');
 
-    if (cnt) cnt.textContent = data.length;
-    tile.classList.remove('hidden');
+    // Newest uploads sit at the top of the 2026 list
+    list.insertAdjacentHTML('afterbegin', html);
+    _setMemoAccCount('memo-acc-hr2026', base + data.length);
     return data.length;
 }
 
@@ -8931,11 +8927,6 @@ function loadDeptMemos() {
     const user = window.__brdcUser || {};
     const dept = (user.dept || '').toLowerCase();
     const label = document.getElementById('memos-dept-label');
-    // Pull in admin-uploaded memos alongside the hard-coded ones
-    loadUploadedMemos().then(n => {
-        if (!label || !n) return;
-        label.textContent = label.textContent.replace(/$/, ` + ${n} uploaded`);
-    });
 
     // Render HR 2026 memos
     const hrList2026 = document.getElementById('hr-memos-2026-list');
@@ -8974,6 +8965,10 @@ function loadDeptMemos() {
     // Counts in the dropdown headers
     _setMemoAccCount('memo-acc-hr2026', HR_MEMOS_2026.length);
     _setMemoAccCount('memo-acc-hr2025', HR_MEMOS.length);
+
+    // Admin-uploaded memos are appended into the 2026 list once the static
+    // rows are in place — this also corrects the 2026 count.
+    loadUploadedMemos();
 
     // Default open state: your own department is expanded, HR sections start closed.
     // Admins see every department, so everything starts closed to keep it scannable.
