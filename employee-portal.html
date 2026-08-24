@@ -10555,15 +10555,23 @@ function _raciChips(value, letter) {
     return people.map(p => `<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${style} mr-1 mb-1">${_escHtml(p)}</span>`).join('');
 }
 
+// Admins and HR can see every department's matrix; everyone else sees only
+// their own. HR is included because they own people-and-process oversight.
+function _raciCanViewAll() {
+    const u = window.__brdcUser || {};
+    return !!u.isAdmin || (u.dept || '').toLowerCase().trim() === 'hr';
+}
+
 async function loadRaci() {
     const listEl = document.getElementById('raci-list');
     if (!listEl) return;
     const user = window.__brdcUser || {};
+    const seesAll = _raciCanViewAll();
 
-    // Admins get a department filter; everyone else is locked to their own
+    // Only the see-all roles get a department filter
     const filterSel = document.getElementById('raci-dept-filter');
     if (filterSel) {
-        if (user.isAdmin) {
+        if (seesAll) {
             filterSel.classList.remove('hidden');
             if (filterSel.options.length <= 1) {
                 Object.entries(RACI_DEPT_LABELS).forEach(([k,v]) => {
@@ -10576,7 +10584,7 @@ async function loadRaci() {
     }
 
     let q = SUPA.from('raci_matrix').select('*').order('dept').order('process');
-    if (!user.isAdmin) {
+    if (!seesAll) {
         const myDept = (user.dept || '').toLowerCase().trim();
         if (!myDept) {
             listEl.innerHTML = `<div class="bento-tile p-10 text-center"><i class="ph-fill ph-info text-3xl text-gray-300 block mb-2"></i>
@@ -10674,9 +10682,9 @@ function resetRaciForm() {
 }
 
 async function loadRaciAdmin() {
-    // Managers can only post to their own department
+    // Managers can only post to their own department (HR and admins are exempt)
     const u = window.__brdcUser || {};
-    const isMgr = !u.isAdmin && _isManagerPosition();
+    const isMgr = !_raciCanViewAll() && _isManagerPosition();
     const deptSel = document.getElementById('raci-dept');
     const note = document.getElementById('raci-dept-note');
     if (deptSel) {
@@ -10700,7 +10708,8 @@ async function renderAdminRaci() {
     el.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">Loading…</p>';
 
     const u = window.__brdcUser || {};
-    const isMgr = !u.isAdmin && _isManagerPosition();
+    // Managers are scoped to their own dept — unless they're HR, who oversee all
+    const isMgr = !_raciCanViewAll() && _isManagerPosition();
     const filter = document.getElementById('raci-admin-filter')?.value || 'all';
 
     let q = SUPA.from('raci_matrix').select('*').order('dept').order('process');
@@ -12662,7 +12671,7 @@ async function saveDirectoryEntry(id) {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-fill ph-spinner-gap animate-spin mr-1"></i>Saving…'; }
 
     const u = window.__brdcUser || {};
-    const isMgr = !u.isAdmin && _isManagerPosition();
+    const isMgr = !u.isAdmin && typeof _isManagerPosition === 'function' && _isManagerPosition();
     const patch = {
         name, position: pos,
         email: (g('email') || '').trim() || null,
