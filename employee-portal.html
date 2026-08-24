@@ -4618,7 +4618,7 @@
                         <img id="settings-avatar" src="https://placehold.co/100x100/2A6E1F/FFFFFF?text=?" alt="Avatar" class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg">
                         <label class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-green hover:bg-green-700 flex items-center justify-center cursor-pointer shadow-md transition-all" title="Change photo">
                             <i class="ph-bold ph-camera text-white text-xs"></i>
-                            <input type="file" accept="image/*" class="hidden" onchange="previewAvatar(this)">
+                            <input id="settings-avatar-input" type="file" accept="image/*" class="hidden" onchange="previewAvatar(this)">
                         </label>
                     </div>
                     <div class="flex-1 min-w-0">
@@ -4777,6 +4777,45 @@
         </div>
     </div>
 </div>
+<!-- ═══ AVATAR CROP MODAL ════════════════════════════════════════════════════ -->
+<div id="crop-overlay"
+     style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:20px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+
+        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px;">
+            <i class="ph-fill ph-crop" style="color:#4f46e5;font-size:20px;"></i>
+            <p style="font-weight:800;color:#111827;font-size:15px;margin:0;">Adjust your photo</p>
+            <button onclick="closeCropper()" style="margin-left:auto;border:none;background:none;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1;">&times;</button>
+        </div>
+
+        <!-- Drag to move, slider to zoom -->
+        <div id="crop-stage"
+             style="position:relative;width:100%;aspect-ratio:1/1;background:#111827;overflow:hidden;cursor:grab;touch-action:none;">
+            <canvas id="crop-canvas" style="width:100%;height:100%;display:block;"></canvas>
+            <div style="position:absolute;inset:0;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,0.45);border-radius:50%;"></div>
+        </div>
+
+        <div style="padding:14px 20px;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:#6b7280;">
+                <i class="ph-fill ph-magnifying-glass-minus"></i>
+                <input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1"
+                       oninput="_cropDraw()" style="flex:1;accent-color:#4f46e5;">
+                <i class="ph-fill ph-magnifying-glass-plus"></i>
+            </label>
+            <p style="font-size:11px;color:#9ca3af;margin:8px 0 0;text-align:center;">Drag the photo to reposition</p>
+        </div>
+
+        <div style="display:flex;gap:8px;padding:0 20px 18px;">
+            <button onclick="closeCropper()"
+                style="flex:1;padding:10px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#4b5563;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+            <button id="crop-save-btn" onclick="applyCrop()"
+                style="flex:2;padding:10px;border-radius:12px;border:none;background:#4f46e5;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">
+                <i class="ph-fill ph-check-circle"></i> Use this photo
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ═══ GLOBAL SEARCH OVERLAY (Ctrl+K) ═══════════════════════════════════════ -->
 <div id="global-search-overlay" onclick="if(event.target===this) closeGlobalSearch()">
     <div id="global-search-box" onclick="event.stopPropagation()">
@@ -8906,6 +8945,116 @@ function _paintAvatar(src) {
     document.querySelectorAll('img[alt="User Profile"]').forEach(img => img.src = src);
 }
 
+// ─── AVATAR CROPPER ───────────────────────────────────────────────────────────
+// Square crop with drag-to-pan and zoom, exported at 512×512 JPEG.
+const _crop = { img: null, x: 0, y: 0, scale: 1, drag: false, sx: 0, sy: 0, size: 512 };
+
+function openCropper(file) {
+    const img = new Image();
+    img.onload = () => {
+        _crop.img = img;
+        _crop.scale = 1;
+        _crop.x = 0;
+        _crop.y = 0;
+        const zoom = document.getElementById('crop-zoom');
+        if (zoom) zoom.value = 1;
+
+        const cv = document.getElementById('crop-canvas');
+        cv.width = _crop.size; cv.height = _crop.size;
+
+        document.getElementById('crop-overlay').style.display = 'flex';
+        _cropDraw();
+    };
+    img.onerror = () => _settingsMsg('settings-profile-msg', 'Could not read that image.', false);
+    img.src = URL.createObjectURL(file);
+}
+
+function closeCropper() {
+    document.getElementById('crop-overlay').style.display = 'none';
+    if (_crop.img && _crop.img.src.startsWith('blob:')) URL.revokeObjectURL(_crop.img.src);
+    _crop.img = null;
+    const inp = document.getElementById('settings-avatar-input');
+    if (inp) inp.value = '';
+}
+
+function _cropDraw() {
+    const cv = document.getElementById('crop-canvas');
+    if (!cv || !_crop.img) return;
+    const ctx = cv.getContext('2d');
+    const S = _crop.size;
+    const img = _crop.img;
+
+    _crop.scale = parseFloat(document.getElementById('crop-zoom').value) || 1;
+
+    // Cover the square, then apply zoom
+    const base = Math.max(S / img.width, S / img.height);
+    const w = img.width  * base * _crop.scale;
+    const h = img.height * base * _crop.scale;
+
+    // Clamp panning so no empty edges show
+    const maxX = Math.max(0, (w - S) / 2);
+    const maxY = Math.max(0, (h - S) / 2);
+    _crop.x = Math.min(maxX, Math.max(-maxX, _crop.x));
+    _crop.y = Math.min(maxY, Math.max(-maxY, _crop.y));
+
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, S, S);
+    ctx.drawImage(img, (S - w) / 2 + _crop.x, (S - h) / 2 + _crop.y, w, h);
+}
+
+(function _wireCropDrag() {
+    const start = e => {
+        if (!_crop.img) return;
+        _crop.drag = true;
+        const p = e.touches ? e.touches[0] : e;
+        _crop.sx = p.clientX; _crop.sy = p.clientY;
+        const st = document.getElementById('crop-stage');
+        if (st) st.style.cursor = 'grabbing';
+    };
+    const move = e => {
+        if (!_crop.drag || !_crop.img) return;
+        e.preventDefault();
+        const p = e.touches ? e.touches[0] : e;
+        const st = document.getElementById('crop-stage');
+        const ratio = _crop.size / (st ? st.clientWidth : _crop.size);
+        _crop.x += (p.clientX - _crop.sx) * ratio;
+        _crop.y += (p.clientY - _crop.sy) * ratio;
+        _crop.sx = p.clientX; _crop.sy = p.clientY;
+        _cropDraw();
+    };
+    const end = () => {
+        _crop.drag = false;
+        const st = document.getElementById('crop-stage');
+        if (st) st.style.cursor = 'grab';
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+        const st = document.getElementById('crop-stage');
+        if (!st) return;
+        st.addEventListener('mousedown', start);
+        st.addEventListener('touchstart', start, { passive: true });
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move, { passive: false });
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+    });
+})();
+
+function applyCrop() {
+    const cv = document.getElementById('crop-canvas');
+    if (!cv || !_crop.img) return;
+    const btn = document.getElementById('crop-save-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-fill ph-spinner-gap animate-spin"></i> Saving…'; }
+
+    cv.toBlob(blob => {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Use this photo'; }
+        if (!blob) { _settingsMsg('settings-profile-msg', 'Could not process the image.', false); return; }
+        const cropped = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+        closeCropper();
+        _uploadAvatarFile(cropped);
+    }, 'image/jpeg', 0.9);
+}
+
+// Entry point from the file input — now opens the cropper first
 async function previewAvatar(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
@@ -8914,12 +9063,19 @@ async function previewAvatar(input) {
     if (!file.type.startsWith('image/')) {
         _settingsMsg('settings-profile-msg', 'Please choose an image file.', false); input.value=''; return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-        _settingsMsg('settings-profile-msg', 'Image must be under 5 MB.', false); input.value=''; return;
+    if (file.size > 10 * 1024 * 1024) {
+        _settingsMsg('settings-profile-msg', 'Image must be under 10 MB.', false); input.value=''; return;
     }
     if (!user.username) {
         _settingsMsg('settings-profile-msg', 'You must be signed in to change your photo.', false); return;
     }
+    openCropper(file);
+}
+
+// Does the actual upload — called with the cropped square
+async function _uploadAvatarFile(file) {
+    const user = window.__brdcUser || {};
+    if (!user.username) return;
 
     // 1. Instant local preview so the UI feels immediate
     const reader = new FileReader();
@@ -8928,12 +9084,11 @@ async function previewAvatar(input) {
 
     // 2. Upload to Storage — one stable path per user, overwritten on change
     _settingsMsg('settings-profile-msg', 'Uploading photo…', true);
-    const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
-    const path = `${user.username.toLowerCase()}.${ext}`;
+    const path = `${user.username.toLowerCase()}.jpg`;
 
     const { error: upErr } = await SUPA.storage
         .from(AVATAR_BUCKET)
-        .upload(path, file, { contentType: file.type, upsert: true });
+        .upload(path, file, { contentType: 'image/jpeg', upsert: true });
 
     if (upErr) {
         _settingsMsg('settings-profile-msg', 'Upload failed: ' + upErr.message, false);
@@ -11914,14 +12069,108 @@ async function renderAdminDirectory() {
     }
     const { data: list, error } = await q;
     if (error || !list || !list.length) { el.innerHTML='<p class="text-sm text-gray-400 text-center py-4">No entries.</p>'; return; }
+    _dirCache = list;   // keep for the edit form
     el.innerHTML = list.map(d=>`
-        <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
-            <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">${(d.name||'?')[0]}</div>
-            <div class="flex-1 min-w-0"><p class="text-sm font-bold text-gray-900">${d.name}</p>
-            <p class="text-xs text-gray-500">${d.position} · ${d.dept||''}</p>
-            <p class="text-[10px] text-gray-400">${d.email||''}${d.phone?' · '+d.phone:''}</p></div>
-            <button onclick="deleteDirectoryEntry(${d.id})" class="text-red-400 hover:text-red-600 p-1"><i class="ph-fill ph-trash text-sm"></i></button>
+        <div id="dir-row-${d.id}" class="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">${_escHtml((d.name||'?')[0])}</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-bold text-gray-900">${_escHtml(d.name)}</p>
+            <p class="text-xs text-gray-500">${_escHtml(d.position)} · ${_escHtml(d.dept||'')}</p>
+            <p class="text-[10px] text-gray-400">${_escHtml(d.email||'')}${d.phone?' · '+_escHtml(d.phone):''}</p></div>
+            <button onclick="editDirectoryEntry(${d.id})" title="Edit"
+                class="text-blue-500 hover:text-blue-700 p-1"><i class="ph-fill ph-pencil-simple text-sm"></i></button>
+            <button onclick="deleteDirectoryEntry(${d.id})" title="Delete"
+                class="text-red-400 hover:text-red-600 p-1"><i class="ph-fill ph-trash text-sm"></i></button>
+          </div>
+          <div id="dir-edit-${d.id}" class="hidden mt-3 pt-3 border-t border-gray-200"></div>
         </div>`).join('');
+}
+
+// ── EDIT A DIRECTORY ENTRY ────────────────────────────────────────────────────
+let _dirCache = [];
+
+function editDirectoryEntry(id) {
+    const d = _dirCache.find(x => x.id === id);
+    const box = document.getElementById('dir-edit-' + id);
+    if (!d || !box) return;
+
+    // Close any other open editor first
+    document.querySelectorAll('[id^="dir-edit-"]').forEach(b => {
+        if (b !== box) { b.classList.add('hidden'); b.innerHTML = ''; }
+    });
+
+    if (!box.classList.contains('hidden')) {   // toggle closed
+        box.classList.add('hidden'); box.innerHTML = ''; return;
+    }
+
+    const DEPTS = ['it','hr','accounting','purchasing','auditor','cmg','smartfuels','neobros','panpacific'];
+    const u = window.__brdcUser || {};
+    const isMgr = !u.isAdmin && _isManagerPosition();
+    const myDept = (u.dept || '').toLowerCase().trim();
+
+    const fld = (label, id, val, type='text') => `
+        <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-1">${label}</label>
+            <input id="${id}" type="${type}" value="${_escHtml(val || '')}"
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+        </div>`;
+
+    box.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${fld('Full Name *',  'de-name-'+id, d.name)}
+            ${fld('Position *',   'de-pos-'+id,  d.position)}
+            <div>
+                <label class="block text-[11px] font-bold text-gray-500 mb-1">Department</label>
+                <select id="de-dept-${id}" ${isMgr ? 'disabled' : ''}
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${isMgr ? 'opacity-60' : ''}">
+                    ${DEPTS.map(x => `<option value="${x}"${(d.dept||'').toLowerCase()===x?' selected':''}>${x.toUpperCase()}</option>`).join('')}
+                </select>
+                ${isMgr ? '<p class="text-[10px] text-gray-400 mt-1">Locked to your department</p>' : ''}
+            </div>
+            ${fld('Email', 'de-email-'+id, d.email, 'email')}
+            ${fld('Phone', 'de-phone-'+id, d.phone)}
+        </div>
+        <div class="flex gap-2 mt-3">
+            <button onclick="saveDirectoryEntry(${id})"
+                class="flex-1 bg-blue-600 text-white rounded-lg py-2 text-xs font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                id="de-save-${id}"><i class="ph-fill ph-check mr-1"></i>Save Changes</button>
+            <button onclick="editDirectoryEntry(${id})"
+                class="px-4 bg-white border border-gray-200 text-gray-600 rounded-lg py-2 text-xs font-bold hover:bg-gray-50 transition-colors">Cancel</button>
+        </div>`;
+    box.classList.remove('hidden');
+    document.getElementById('de-name-' + id)?.focus();
+}
+
+async function saveDirectoryEntry(id) {
+    const g = k => (document.getElementById('de-' + k + '-' + id) || {}).value;
+    const name = (g('name') || '').trim();
+    const pos  = (g('pos')  || '').trim();
+    if (!name || !pos) { _dirMsg('error', 'Name and Position are required.'); return; }
+
+    const btn = document.getElementById('de-save-' + id);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-fill ph-spinner-gap animate-spin mr-1"></i>Saving…'; }
+
+    const u = window.__brdcUser || {};
+    const isMgr = !u.isAdmin && _isManagerPosition();
+    const patch = {
+        name, position: pos,
+        email: (g('email') || '').trim() || null,
+        phone: (g('phone') || '').trim() || null
+    };
+    // Managers can't move people out of their own department
+    if (!isMgr) patch.dept = g('dept');
+
+    const { error } = await SUPA.from('directory_entries').update(patch).eq('id', id);
+
+    if (error) {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-fill ph-check mr-1"></i>Save Changes'; }
+        _dirMsg('error', 'Error: ' + error.message);
+        return;
+    }
+
+    _dirMsg('success', name + ' updated.');
+    await renderAdminDirectory();
+    renderPublicDirectoryEntries();
 }
 async function deleteDirectoryEntry(id) {
     if (!confirm('Remove this entry?')) return;
