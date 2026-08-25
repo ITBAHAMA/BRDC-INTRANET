@@ -1240,10 +1240,12 @@
         window.__brdcUser = session;
         if (!session.isAdmin) window.__brdcAutoDept = session.dept;
         // Show/hide department-restricted Essential Tools tiles once the DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof applyToolVisibility === 'function') applyToolVisibility();
-        });
-        setTimeout(() => { if (typeof applyToolVisibility === 'function') applyToolVisibility(); }, 400);
+        const _applyDeptGates = () => {
+            if (typeof applyToolVisibility   === 'function') applyToolVisibility();
+            if (typeof applyAcctApVisibility === 'function') applyAcctApVisibility();
+        };
+        document.addEventListener('DOMContentLoaded', _applyDeptGates);
+        setTimeout(_applyDeptGates, 400);
     }
 
     // ── LOADING STATE ON BUTTONS ───────────────────────────────────────────
@@ -2574,6 +2576,54 @@
                     </div>
                 </div>
             </div>
+                <!-- ACCOUNTING AP — visible to the Accounting department only -->
+                <div id="acct-ap-section" class="memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                    <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+                        <i class="ph-fill ph-receipt text-emerald-500 text-xl flex-shrink-0"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Accounting — Accounts Payable</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">AP training videos</span>
+                        </span>
+                        <span class="memo-acc-count bg-emerald-100 text-emerald-700">2</span>
+                        <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+                    </button>
+                    <div class="memo-acc-panel"><div class="memo-acc-inner">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 pt-1">
+
+                            <div>
+                                <div class="flex items-start gap-2 mb-2">
+                                    <i class="ph-fill ph-play-circle text-emerald-500 text-lg flex-shrink-0 mt-0.5"></i>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-gray-900 leading-tight">Ang Playbook ng AP</p>
+                                        <p class="text-xs text-gray-400">7 min 43 s</p>
+                                    </div>
+                                </div>
+                                <div class="relative w-full rounded-xl overflow-hidden border border-gray-100 bg-black" style="padding-top:56.25%;">
+                                    <video class="acct-ap-video absolute inset-0 w-full h-full object-contain bg-black"
+                                           data-src="videos/ap-playbook.mp4"
+                                           controls preload="none" playsinline controlslist="nodownload"></video>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex items-start gap-2 mb-2">
+                                    <i class="ph-fill ph-play-circle text-emerald-500 text-lg flex-shrink-0 mt-0.5"></i>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-gray-900 leading-tight">Tagapagbantay ng Bahama — AP</p>
+                                        <p class="text-xs text-gray-400">9 min 11 s</p>
+                                    </div>
+                                </div>
+                                <div class="relative w-full rounded-xl overflow-hidden border border-gray-100 bg-black" style="padding-top:56.25%;">
+                                    <video class="acct-ap-video absolute inset-0 w-full h-full object-contain bg-black"
+                                           data-src="videos/ap-tagapagbantay.mp4"
+                                           controls preload="none" playsinline controlslist="nodownload"></video>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div></div>
+                </div>
+
                                 <div id="tutorials-grid" class="contents">
                     <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-10 flex flex-col items-center justify-center text-center">
                         <i class="ph-fill ph-buildings text-gray-200 text-6xl mb-4"></i>
@@ -7413,7 +7463,8 @@ window.applyToolVisibility = applyToolVisibility;
 
 function applyDepartment(dept) {
     currentDept = dept;
-    applyToolVisibility();   // refresh dept-restricted tool tiles
+    applyToolVisibility();      // refresh dept-restricted tool tiles
+    applyAcctApVisibility();    // show/hide the Accounting AP training block
     const data = DEPT_DATA[dept];
     if (!data) return;
 
@@ -10802,6 +10853,45 @@ async function deleteRaci(id) {
     renderAdminRaci();
     loadRaci();
 }
+
+// ─── ACCOUNTING AP TRAINING ───────────────────────────────────────────────────
+// Accounting sees it; HR and admins can view it too (same rule as the RACI).
+// Videos use preload="none" and only get a src when the section is opened,
+// so nobody downloads 17 MB unless they actually want to watch.
+function applyAcctApVisibility() {
+    const sec = document.getElementById('acct-ap-section');
+    if (!sec) return;
+    const u = window.__brdcUser || {};
+    const dept = (u.dept || '').toLowerCase().trim();
+    const canSee = !!u.isAdmin || dept === 'accounting' || dept === 'hr';
+    sec.classList.toggle('hidden', !canSee);
+    if (!canSee) {
+        // Stop and unload if the user switched away from Accounting
+        sec.querySelectorAll('video.acct-ap-video').forEach(v => {
+            try { v.pause(); } catch (e) {}
+            v.removeAttribute('src'); v.load();
+        });
+    }
+}
+window.applyAcctApVisibility = applyAcctApVisibility;
+
+// Attach the real src the first time the accordion is expanded
+function _wireAcctApLazyLoad() {
+    const sec = document.getElementById('acct-ap-section');
+    if (!sec || sec.dataset.lazyWired === '1') return;
+    sec.dataset.lazyWired = '1';
+
+    const load = () => {
+        if (!sec.classList.contains('open')) return;
+        sec.querySelectorAll('video.acct-ap-video').forEach(v => {
+            if (!v.getAttribute('src') && v.dataset.src) v.setAttribute('src', v.dataset.src);
+        });
+    };
+    // The accordion toggles the .open class, so watch for it
+    new MutationObserver(load).observe(sec, { attributes: true, attributeFilter: ['class'] });
+    load();   // in case it starts open
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(_wireAcctApLazyLoad, 400));
 
 // ─── ORIENTATION VIDEO ────────────────────────────────────────────────────────
 // Served from Supabase Storage so no Google sign-in is needed and real autoplay
