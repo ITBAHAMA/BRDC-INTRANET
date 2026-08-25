@@ -2582,7 +2582,7 @@
                 </div>
             </div>
                 <!-- ACCOUNTING AP — GUIDES (Accounting / HR / admin only) -->
-                <div id="acct-ap-docs" class="acct-ap-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                <div id="acct-ap-docs" class="acct-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
                     <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
                         <i class="ph-fill ph-file-text text-rose-500 text-xl flex-shrink-0"></i>
                         <span class="flex-1 min-w-0">
@@ -2656,8 +2656,41 @@
                     </div></div>
                 </div>
 
+                <!-- ACCOUNTING GLA (Accounting / HR / admin only) -->
+                <div id="acct-gla" class="acct-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                    <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+                        <i class="ph-fill ph-buildings text-amber-500 text-xl flex-shrink-0"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Accounting — GLA</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">Gross Leasable Area</span>
+                        </span>
+                        <span class="memo-acc-count bg-amber-100 text-amber-700">1</span>
+                        <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+                    </button>
+                    <div class="memo-acc-panel"><div class="memo-acc-inner">
+                        <div class="space-y-2">
+
+                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
+                                <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                                    <i class="ph-fill ph-microsoft-excel-logo text-green-600 text-xl"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 leading-tight">GLA Worksheet</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">Google Sheets &bull; opens in a new tab</p>
+                                </div>
+                                <a href="https://docs.google.com/spreadsheets/d/1ECDLXKtOwMglaBesaEDPlu00J1Gj4TVC/edit"
+                                   target="_blank" rel="noopener"
+                                   class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-brand-green text-white hover:bg-green-700 transition-colors flex-shrink-0">
+                                    <i class="ph-bold ph-arrow-square-out"></i> Open
+                                </a>
+                            </div>
+
+                        </div>
+                    </div></div>
+                </div>
+
                 <!-- ACCOUNTING AP — VIDEOS (Accounting / HR / admin only) -->
-                <div id="acct-ap-videos" class="acct-ap-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                <div id="acct-ap-videos" class="acct-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
                     <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
                         <i class="ph-fill ph-video text-emerald-500 text-xl flex-shrink-0"></i>
                         <span class="flex-1 min-w-0">
@@ -11003,7 +11036,7 @@ async function deleteRaci(id) {
 // Videos use preload="none" and only get a src when the section is opened,
 // so nobody downloads 17 MB unless they actually want to watch.
 function applyAcctApVisibility() {
-    const blocks = document.querySelectorAll('.acct-ap-block');
+    const blocks = document.querySelectorAll('.acct-block');
     if (!blocks.length) return;
     const u = window.__brdcUser || {};
     const dept = (u.dept || '').toLowerCase().trim();
@@ -11024,7 +11057,7 @@ window.applyAcctApVisibility = applyAcctApVisibility;
 
 // Attach the real src the first time a video accordion is expanded
 function _wireAcctApLazyLoad() {
-    document.querySelectorAll('.acct-ap-block').forEach(sec => {
+    document.querySelectorAll('.acct-block').forEach(sec => {
         if (sec.dataset.lazyWired === '1') return;
         sec.dataset.lazyWired = '1';
 
