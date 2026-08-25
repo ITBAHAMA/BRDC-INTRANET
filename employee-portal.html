@@ -2576,42 +2576,56 @@
                     </div>
                 </div>
             </div>
-                <!-- ACCOUNTING AP — visible to the Accounting department only -->
-                <div id="acct-ap-section" class="memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                <!-- ACCOUNTING AP — GUIDES (Accounting / HR / admin only) -->
+                <div id="acct-ap-docs" class="acct-ap-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
                     <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
-                        <i class="ph-fill ph-receipt text-emerald-500 text-xl flex-shrink-0"></i>
+                        <i class="ph-fill ph-file-text text-rose-500 text-xl flex-shrink-0"></i>
                         <span class="flex-1 min-w-0">
-                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Accounting — Accounts Payable</span>
-                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">AP training videos</span>
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Accounting — AP Guides</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">Step-by-step documents</span>
                         </span>
-                        <span class="memo-acc-count bg-emerald-100 text-emerald-700">3</span>
+                        <span class="memo-acc-count bg-rose-100 text-rose-700">1</span>
                         <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
                     </button>
                     <div class="memo-acc-panel"><div class="memo-acc-inner">
+                        <div class="space-y-2">
 
-                        <!-- Step-by-step guide -->
-                        <div class="flex items-center gap-3 p-3 mb-4 rounded-xl border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors group">
-                            <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
-                                <i class="ph-fill ph-file-pdf text-red-500 text-xl"></i>
+                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
+                                <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                                    <i class="ph-fill ph-file-pdf text-red-500 text-xl"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 leading-tight">AP Aging — Step-by-Step Guide</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">2 pages &bull; Steps 1&ndash;3 with screenshots</p>
+                                </div>
+                                <div class="flex gap-1.5 flex-shrink-0">
+                                    <a href="docs/ap-aging.pdf" target="_blank" rel="noopener"
+                                       class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-brand-green text-white hover:bg-green-700 transition-colors">
+                                        <i class="ph-bold ph-eye"></i> View
+                                    </a>
+                                    <a href="docs/ap-aging.docx" download title="Download the editable Word file"
+                                       class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+                                        <i class="ph-bold ph-download-simple"></i>
+                                    </a>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-900 leading-tight">AP Aging — Step-by-Step Guide</p>
-                                <p class="text-xs text-gray-400 mt-0.5">2 pages &bull; Steps 1&ndash;3 with screenshots</p>
-                            </div>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0">Guide</span>
-                            <div class="flex gap-1.5 flex-shrink-0">
-                                <a href="docs/ap-aging.pdf" target="_blank" rel="noopener"
-                                   class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-brand-green text-white hover:bg-green-700 transition-colors">
-                                    <i class="ph-bold ph-eye"></i> View
-                                </a>
-                                <a href="docs/ap-aging.docx" download
-                                   title="Download the editable Word file"
-                                   class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-                                    <i class="ph-bold ph-download-simple"></i>
-                                </a>
-                            </div>
+
                         </div>
+                    </div></div>
+                </div>
 
+                <!-- ACCOUNTING AP — VIDEOS (Accounting / HR / admin only) -->
+                <div id="acct-ap-videos" class="acct-ap-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                    <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
+                        <i class="ph-fill ph-video text-emerald-500 text-xl flex-shrink-0"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-bold text-sm uppercase tracking-wider text-gray-500 truncate">Accounting — AP Videos</span>
+                            <span class="block text-xs text-gray-400 font-medium normal-case tracking-normal">Training recordings</span>
+                        </span>
+                        <span class="memo-acc-count bg-emerald-100 text-emerald-700">2</span>
+                        <i class="ph-bold ph-caret-down memo-acc-chevron"></i>
+                    </button>
+                    <div class="memo-acc-panel"><div class="memo-acc-inner">
                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 pt-1">
 
                             <div>
@@ -2648,7 +2662,7 @@
                     </div></div>
                 </div>
 
-                                <div id="tutorials-grid" class="contents">
+                <div id="tutorials-grid" class="contents">
                     <div class="bento-tile col-span-1 md:col-span-2 xl:col-span-3 p-10 flex flex-col items-center justify-center text-center">
                         <i class="ph-fill ph-buildings text-gray-200 text-6xl mb-4"></i>
                         <p class="text-gray-400 font-medium">Go to the Dashboard and select your department<br>to load your training modules.</p>
@@ -10881,37 +10895,41 @@ async function deleteRaci(id) {
 // Videos use preload="none" and only get a src when the section is opened,
 // so nobody downloads 17 MB unless they actually want to watch.
 function applyAcctApVisibility() {
-    const sec = document.getElementById('acct-ap-section');
-    if (!sec) return;
+    const blocks = document.querySelectorAll('.acct-ap-block');
+    if (!blocks.length) return;
     const u = window.__brdcUser || {};
     const dept = (u.dept || '').toLowerCase().trim();
     const canSee = !!u.isAdmin || dept === 'accounting' || dept === 'hr';
-    sec.classList.toggle('hidden', !canSee);
-    if (!canSee) {
-        // Stop and unload if the user switched away from Accounting
-        sec.querySelectorAll('video.acct-ap-video').forEach(v => {
-            try { v.pause(); } catch (e) {}
-            v.removeAttribute('src'); v.load();
-        });
-    }
+
+    blocks.forEach(sec => {
+        sec.classList.toggle('hidden', !canSee);
+        if (!canSee) {
+            // Stop and unload if the user switched away from Accounting
+            sec.querySelectorAll('video.acct-ap-video').forEach(v => {
+                try { v.pause(); } catch (e) {}
+                v.removeAttribute('src'); v.load();
+            });
+        }
+    });
 }
 window.applyAcctApVisibility = applyAcctApVisibility;
 
-// Attach the real src the first time the accordion is expanded
+// Attach the real src the first time a video accordion is expanded
 function _wireAcctApLazyLoad() {
-    const sec = document.getElementById('acct-ap-section');
-    if (!sec || sec.dataset.lazyWired === '1') return;
-    sec.dataset.lazyWired = '1';
+    document.querySelectorAll('.acct-ap-block').forEach(sec => {
+        if (sec.dataset.lazyWired === '1') return;
+        sec.dataset.lazyWired = '1';
 
-    const load = () => {
-        if (!sec.classList.contains('open')) return;
-        sec.querySelectorAll('video.acct-ap-video').forEach(v => {
-            if (!v.getAttribute('src') && v.dataset.src) v.setAttribute('src', v.dataset.src);
-        });
-    };
-    // The accordion toggles the .open class, so watch for it
-    new MutationObserver(load).observe(sec, { attributes: true, attributeFilter: ['class'] });
-    load();   // in case it starts open
+        const load = () => {
+            if (!sec.classList.contains('open')) return;
+            sec.querySelectorAll('video.acct-ap-video').forEach(v => {
+                if (!v.getAttribute('src') && v.dataset.src) v.setAttribute('src', v.dataset.src);
+            });
+        };
+        // The accordion toggles the .open class, so watch for it
+        new MutationObserver(load).observe(sec, { attributes: true, attributeFilter: ['class'] });
+        load();   // in case it starts open
+    });
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(_wireAcctApLazyLoad, 400));
 
