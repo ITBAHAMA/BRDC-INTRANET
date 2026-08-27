@@ -3169,6 +3169,32 @@
                     <span class="text-xs text-gray-400">M. Lhuillier</span>
                 </a>
 
+                <!-- GLA ONLY -->
+                <a href="https://drive.google.com/drive/folders/1rFQNSF0DEPNBA6ySE82tfEQHat7kfkeG" target="_blank" rel="noopener"
+                   data-tool-position="Gross Leasable Area - GLA"
+                   class="bento-tile flex flex-col items-center justify-center p-6 gap-3 hover:border-brand-green hover:bg-brand-light/30 transition-all group text-center relative"
+                   style="display:none;">
+                    <span class="absolute top-2 right-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-600">GLA</span>
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-chart-line-up text-3xl text-cyan-600"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-800">ESALES 2026</span>
+                    <span class="text-xs text-gray-400">Drive Folder</span>
+                </a>
+
+                <!-- GLA + ACCOUNTING SUPERVISORS -->
+                <a href="https://drive.google.com/drive/folders/1sgkvO6LxYfY5q2r61Ilg5E9UAYfErD7b" target="_blank" rel="noopener"
+                   data-tool-position="Gross Leasable Area - GLA,Accounting Supervisor,Accounting Assistant Supervisor"
+                   class="bento-tile flex flex-col items-center justify-center p-6 gap-3 hover:border-brand-green hover:bg-brand-light/30 transition-all group text-center relative"
+                   style="display:none;">
+                    <span class="absolute top-2 right-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-600">Restricted</span>
+                    <div class="w-14 h-14 rounded-2xl bg-lime-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-folders text-3xl text-lime-700"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-800">Working Paper 2026</span>
+                    <span class="text-xs text-gray-400">Drive Folder</span>
+                </a>
+
                 <!-- PURCHASING ONLY — hidden for every other department -->
                 <a href="https://trello.com/u/mgpante/boards" target="_blank" rel="noopener"
                    data-tool-dept="purchasing"
@@ -7593,13 +7619,25 @@ document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key
 // ─── DEPARTMENT-RESTRICTED TOOLS ──────────────────────────────────────────────
 // Any Essential Tools tile carrying data-tool-dept="x" (or "x,y") is shown only
 // to users in that department. Admins always see everything.
+// Essential Tools tiles can be restricted two ways:
+//   data-tool-dept="accounting,hr"                  → by department
+//   data-tool-position="Accounting Supervisor,..."  → by job title
+// A tile with both is shown if EITHER matches. Admins always see everything.
 function applyToolVisibility() {
     const user = window.__brdcUser || {};
     const myDept = (user.dept || '').toLowerCase().trim();
-    document.querySelectorAll('[data-tool-dept]').forEach(el => {
-        const allowed = (el.dataset.toolDept || '')
+    const myPos  = (user.position || '').toLowerCase().trim();
+
+    document.querySelectorAll('[data-tool-dept], [data-tool-position]').forEach(el => {
+        const depts = (el.dataset.toolDept || '')
             .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-        const canSee = user.isAdmin || allowed.includes(myDept);
+        const positions = (el.dataset.toolPosition || '')
+            .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+        const deptOk = depts.length     && myDept && depts.includes(myDept);
+        const posOk  = positions.length && myPos  && positions.includes(myPos);
+
+        const canSee = user.isAdmin || deptOk || posOk;
         el.style.display = canSee ? '' : 'none';
     });
 }
