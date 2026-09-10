@@ -2499,9 +2499,9 @@
 
                 <!-- BIRTHDAY & ANNIVERSARY WIDGET -->
                 <div id="birthday-tile" class="bento-tile col-span-1 md:col-span-1 xl:col-span-2 row-span-1 p-6">
-                    <h2 class="text-gray-900 font-bold mb-4 flex items-center gap-2">
+                    <h2 class="text-gray-900 font-bold mb-4 flex items-center flex-wrap gap-2">
                         <i class="ph-fill ph-cake text-pink-500"></i> Birthdays &amp; Anniversaries
-                        <span class="ml-auto text-xs text-gray-400 font-normal" id="birthday-month-label"></span>
+                        <span class="ml-auto text-xs text-gray-400 font-normal whitespace-nowrap" id="birthday-month-label"></span>
                     </h2>
                     <div id="birthday-list" class="space-y-2"></div>
                 </div>
@@ -2567,7 +2567,7 @@
                     <!-- Tap-to-unmute overlay, hidden once the user turns sound on -->
                     <button id="orientation-unmute"
                             onclick="unmuteOrientation()"
-                            class="absolute bottom-4 left-4 z-10 flex items-center gap-2 px-4 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-bold backdrop-blur-sm transition-all shadow-lg">
+                            class="absolute bottom-12 left-3 z-10 flex items-center gap-2 px-4 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-bold backdrop-blur-sm transition-all shadow-lg">
                         <i class="ph-fill ph-speaker-simple-slash text-base"></i>
                         Tap for sound
                     </button>
@@ -2597,7 +2597,7 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-gray-400 mb-2">AP Assistant — Onboarding</p>
                         <div class="space-y-2 mb-5">
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
                                 <span class="w-7 h-7 rounded-lg bg-rose-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0">1</span>
                                 <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-file-pdf text-red-500 text-xl"></i>
@@ -2612,7 +2612,7 @@
                                 </a>
                             </div>
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
                                 <span class="w-7 h-7 rounded-lg bg-rose-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0">2</span>
                                 <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-file-pdf text-red-500 text-xl"></i>
@@ -2632,7 +2632,7 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-gray-400 mb-2">Reference</p>
                         <div class="space-y-2">
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50/30 transition-colors">
                                 <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-file-pdf text-red-500 text-xl"></i>
                                 </div>
@@ -2672,7 +2672,7 @@
                     <div class="memo-acc-panel"><div class="memo-acc-inner">
                         <div class="space-y-2">
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-sky-300 hover:bg-sky-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-sky-300 hover:bg-sky-50/30 transition-colors">
                                 <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-folder-open text-blue-500 text-xl"></i>
                                 </div>
@@ -2705,7 +2705,7 @@
                     <div class="memo-acc-panel"><div class="memo-acc-inner">
                         <div class="space-y-2">
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
                                 <span class="w-7 h-7 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0">1</span>
                                 <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-microsoft-excel-logo text-green-600 text-xl"></i>
@@ -2721,7 +2721,7 @@
                                 </a>
                             </div>
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
                                 <span class="w-7 h-7 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0">2</span>
                                 <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-microsoft-excel-logo text-green-600 text-xl"></i>
@@ -2737,7 +2737,7 @@
                                 </a>
                             </div>
 
-                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50/30 transition-colors">
                                 <span class="w-7 h-7 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0">3</span>
                                 <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
                                     <i class="ph-fill ph-microsoft-excel-logo text-green-600 text-xl"></i>
@@ -6555,7 +6555,7 @@ let tourStep = 0;
         if (glow) { glow.style.left = progress + '%'; }
         if (pct) pct.textContent = Math.floor(progress) + '%';
         if (status && stepIdx < steps.length) { status.textContent = steps[Math.min(stepIdx, steps.length-1)]; }
-        if (stepText) stepText.textContent = 'Step ' + (stepIdx+1) + ' of ' + steps.length;
+        if (stepText) stepText.textContent = 'Step ' + (Math.min(stepIdx, steps.length - 1) + 1) + ' of ' + steps.length;
         stepIdx++;
         if (progress >= 100) {
             clearInterval(interval);
@@ -7873,7 +7873,7 @@ function renderDashboard(dept, data) {
         data.tutorials.slice(0, 2).forEach(tut => {
             const s = statusMap[tut.status] || statusMap['not-started'];
             const card = document.createElement('div');
-            card.className = 'flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-green/30 hover:bg-brand-light/30 transition-all cursor-pointer';
+            card.className = 'flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-green/30 hover:bg-brand-light/30 transition-all cursor-pointer';
             card.innerHTML =
                 '<div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#' + tut.color + '22">' +
                 '<i class="ph-fill ph-play-circle text-2xl" style="color:#' + tut.color + '"></i></div>' +
@@ -9166,7 +9166,7 @@ function memoPublicUrl(file) {
 function memoRowHtml(m) {
     const url = memoPublicUrl(m.file);
     const tagCls = TAG_COLORS[m.tag] || 'bg-gray-100 text-gray-600';
-    return `<div class="memo-row flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-green/40 hover:bg-green-50/30 transition-colors group" data-name="${m.name.toLowerCase()}">
+    return `<div class="memo-row flex items-start flex-wrap gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-green/40 hover:bg-green-50/30 transition-colors group" data-name="${m.name.toLowerCase()}">
         <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
             <i class="ph-fill ph-file-pdf text-red-500 text-lg"></i>
         </div>
@@ -9175,7 +9175,7 @@ function memoRowHtml(m) {
             <p class="text-xs text-gray-400 mt-0.5">${m.size} &bull; ${m.date}</p>
         </div>
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${tagCls} flex-shrink-0">${m.tag}</span>
-        <div class="flex gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="flex gap-1.5 w-full md:w-auto md:flex-shrink-0 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity mt-2 md:mt-0">
             <a href="${url}" target="_blank" rel="noopener"
                class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-brand-green text-white hover:bg-green-700 transition-colors">
                 <i class="ph-bold ph-eye"></i> View
@@ -9220,7 +9220,7 @@ async function loadUploadedMemos() {
         const date = m.uploaded_at
             ? new Date(m.uploaded_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' })
             : '';
-        return `<div class="memo-row flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-300 hover:bg-purple-50/30 transition-colors group"
+        return `<div class="memo-row flex items-start flex-wrap gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-300 hover:bg-purple-50/30 transition-colors group"
                      data-name="${_escHtml((m.title||'').toLowerCase())}">
             <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                 <i class="ph-fill ph-file-pdf text-red-500 text-lg"></i>
@@ -9230,7 +9230,7 @@ async function loadUploadedMemos() {
                 <p class="text-xs text-gray-400 mt-0.5">${_escHtml(DEPT_LBL[m.dept] || m.dept || '')} &bull; ${date}${m.uploaded_by ? ' &bull; by ' + _escHtml(m.uploaded_by) : ''}</p>
             </div>
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 flex-shrink-0">Memo</span>
-            <div class="flex gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="flex gap-1.5 w-full md:w-auto md:flex-shrink-0 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity mt-2 md:mt-0">
                 <a href="${href}" target="_blank" rel="noopener"
                    class="flex items-center gap-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-brand-green text-white hover:bg-green-700 transition-colors">
                     <i class="ph-bold ph-eye"></i> View
