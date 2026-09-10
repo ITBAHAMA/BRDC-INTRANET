@@ -1626,8 +1626,8 @@
         it:         ['IT Manager','IT Assistant','IT Staff'],
         hr:         ['HR and Admin Manager','Assistant HR Manager','HR Assistant',
                      'Recruitment Supervisor','Recruitment Assistant','Recruitment Staff'],
-        accounting: ['Accounting Supervisor','Accounting Assistant Supervisor',
-                     'Accounting Assistant','Accounting Staff','Gross Leasable Area - GLA'],
+        accounting: ['Accounting Head','Accounting Supervisor','Accounting Assistant Supervisor',
+                     'Accounting Assistant','Accounting Staff','Accounts Receivable','Gross Leasable Area - GLA'],
         auditor:    ['Auditor Supervisor','Field Auditor -Manila',
                      'Field Auditor -South','Field Auditor -North','Field Auditor -Rizal'],
         purchasing: ['Purchasing Supervisor','Purchasing Assistant',
@@ -2656,8 +2656,10 @@
                     </div></div>
                 </div>
 
-                <!-- ACCOUNTING AR — GUIDES (Accounting / HR / admin only) -->
-                <div id="acct-ar-docs" class="acct-block memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3 hidden">
+                <!-- ACCOUNTING AR — GUIDES (Accounts Receivable position + Accounting Head only, plus admins) -->
+                <div id="acct-ar-docs" class="memo-acc bento-tile col-span-1 md:col-span-2 xl:col-span-3"
+                     data-tool-position="Accounts Receivable,Accounting Head"
+                     style="display:none;">
                     <button type="button" class="memo-acc-btn" onclick="toggleMemoAcc(this)" aria-expanded="false">
                         <i class="ph-fill ph-file-text text-sky-500 text-xl flex-shrink-0"></i>
                         <span class="flex-1 min-w-0">
