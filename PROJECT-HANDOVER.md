@@ -217,6 +217,7 @@ Also check that every `onclick="foo()"` has a matching `function foo`, and every
 | Memos | `loadDeptMemos` · `loadUploadedMemos` |
 | Avatars | `previewAvatar` · `applyDirectoryPhotos` |
 | Evaluation | `submitEvaluation` · `EVAL_MAX_SCORE` |
+| Notification bell (header, upper right) | `refreshNotifBell` · `toggleNotifPopup` — combines unread memos, unread dept/company announcements, and today's birthdays/anniversaries into one bell + badge + dropdown |
 
 ---
 
