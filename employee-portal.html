@@ -2079,6 +2079,29 @@
             <p class="hidden md:block text-gray-500 mt-1 md:text-base" id="section-subtitle">Select your department to personalize your onboarding experience.</p>
         </div>
         <div class="mt-1 md:mt-0 flex items-center gap-1.5 md:gap-3">
+            <!-- Version / What's New Badge -->
+            <div class="relative">
+                <button id="version-badge-btn" onclick="toggleVersionPopup()"
+                    class="flex items-center gap-1.5 px-2 py-1.5 md:px-3 md:py-2 rounded-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-500 dark:text-gray-300 text-xs md:text-sm font-medium hover:border-brand-green hover:text-brand-green transition-all shadow-sm"
+                    title="Version & What's New">
+                    <i class="ph-fill ph-sparkle text-amber-400 text-base"></i>
+                    <span id="version-badge-label">v1.0</span>
+                </button>
+                <!-- Version Popup -->
+                <div id="version-popup"
+                    class="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                    style="display:none;">
+                    <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-white">
+                        <i class="ph-fill ph-sparkle text-amber-400"></i>
+                        <p class="text-sm font-bold text-gray-800">What's New</p>
+                        <span id="version-popup-current" class="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-green/10 text-brand-green"></span>
+                        <button onclick="closeVersionPopup()" class="ml-auto text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="ph-bold ph-x text-sm"></i>
+                        </button>
+                    </div>
+                    <ul id="version-popup-list" class="max-h-80 overflow-y-auto divide-y divide-gray-50"></ul>
+                </div>
+            </div>
             <!-- Dark Mode Toggle -->
             <button id="dark-mode-toggle" onclick="toggleDarkMode()"
                 class="hidden md:inline-flex relative items-center gap-2 px-2 py-1.5 md:px-3 md:py-2 rounded-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium hover:border-gray-300 dark:hover:border-gray-500 transition-all shadow-sm"
@@ -6280,6 +6303,19 @@ const DEPT_PASSWORDS = {
     neobros: '123456', panpacific: '123456', auditor: '123456'
 };
 const CRED_PASSWORD = '!Bahama1';
+
+// ─── VERSION / CHANGELOG ─────────────────────────────────────────────────────
+// Bump APP_VERSION and add a new entry (top of array) whenever you ship a
+// meaningful change. Shows as the header badge + "What's New" popup.
+const APP_VERSION = '1.1';
+const CHANGELOG = [
+    { version: '1.1', date: 'Sep 16, 2026', notes: [
+        "Added a version badge and \u201cWhat's New\u201d panel to the header so updates are easy to track."
+    ] },
+    { version: '1.0', date: 'Sep 9, 2026', notes: [
+        'Baseline portal: onboarding checklists, Company Directory, Memos & Policies, Training videos, Performance Evaluations, RACI matrix, and Admin Panel.'
+    ] }
+];
 const DEPT_DISPLAY = {
     it: 'IT Department', purchasing: 'Purchasing Department',
     accounting: 'Accounting Department', cmg: 'CMG Department',
@@ -10857,6 +10893,59 @@ document.addEventListener('click', function(e) {
         popup.style.display = 'none';
     }
 });
+
+// ─── VERSION BADGE / WHAT'S NEW POPUP ────────────────────────────────────────
+function renderVersionPopup() {
+    const label = document.getElementById('version-badge-label');
+    const current = document.getElementById('version-popup-current');
+    const list = document.getElementById('version-popup-list');
+    if (label) label.textContent = 'v' + APP_VERSION;
+    if (current) current.textContent = 'Current: v' + APP_VERSION;
+    if (!list) return;
+    list.innerHTML = CHANGELOG.map(entry => `
+        <li class="px-4 py-3">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-black text-gray-800">v${entry.version}</span>
+                <span class="text-[10px] text-gray-400">${entry.date}</span>
+            </div>
+            <ul class="space-y-1">
+                ${entry.notes.map(n => `<li class="text-xs text-gray-500 flex gap-1.5"><i class="ph-fill ph-circle text-[5px] mt-1.5 text-brand-green flex-shrink-0"></i><span>${n}</span></li>`).join('')}
+            </ul>
+        </li>
+    `).join('');
+}
+
+function toggleVersionPopup() {
+    const popup = document.getElementById('version-popup');
+    if (!popup) return;
+    const isOpen = popup.style.display !== 'none';
+    if (isOpen) { popup.style.display = 'none'; return; }
+    renderVersionPopup();
+    popup.style.display = 'block';
+}
+
+function closeVersionPopup() {
+    const popup = document.getElementById('version-popup');
+    if (popup) popup.style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+    const btn = document.getElementById('version-badge-btn');
+    const popup = document.getElementById('version-popup');
+    if (popup && btn && !btn.contains(e.target) && !popup.contains(e.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+// Set the badge label immediately on load (list renders lazily on open)
+document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('version-badge-label');
+    if (label) label.textContent = 'v' + APP_VERSION;
+});
+if (document.readyState !== 'loading') {
+    const _vlabel = document.getElementById('version-badge-label');
+    if (_vlabel) _vlabel.textContent = 'v' + APP_VERSION;
+}
 
 // ─── RACI MATRIX ══════════════════════════════════════════════════════════════
 // Employees see their own department's processes; admins see everything.
