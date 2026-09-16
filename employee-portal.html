@@ -1960,6 +1960,7 @@
     <div class="hidden md:flex flex-col items-center justify-center mb-8">
         <img src="https://i.imgur.com/Q1p4Eiy.jpeg" alt="BAHAMA Realty Logo" class="w-48 object-contain mb-4">
         <span class="bg-brand-light text-brand-green text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Employee Intranet</span>
+        <span id="sidebar-version-label" class="text-[10px] text-gray-400 font-semibold tracking-wide mt-1.5">Version 1.0.5</span>
     </div>
     <div class="hidden md:flex flex-col space-y-2 flex-1">
         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3">Main Menu</p>
@@ -6307,9 +6308,9 @@ const CRED_PASSWORD = '!Bahama1';
 // ─── VERSION / CHANGELOG ─────────────────────────────────────────────────────
 // Bump APP_VERSION and add a new entry (top of array) whenever you ship a
 // meaningful change. Shows as the header badge + "What's New" popup.
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.0.5';
 const CHANGELOG = [
-    { version: '1.1', date: 'Sep 16, 2026', notes: [
+    { version: '1.0.5', date: 'Sep 16, 2026', notes: [
         "Added a version badge and \u201cWhat's New\u201d panel to the header so updates are easy to track."
     ] },
     { version: '1.0', date: 'Sep 9, 2026', notes: [
@@ -10938,14 +10939,14 @@ document.addEventListener('click', function(e) {
 });
 
 // Set the badge label immediately on load (list renders lazily on open)
-document.addEventListener('DOMContentLoaded', () => {
+function _syncVersionLabels() {
     const label = document.getElementById('version-badge-label');
     if (label) label.textContent = 'v' + APP_VERSION;
-});
-if (document.readyState !== 'loading') {
-    const _vlabel = document.getElementById('version-badge-label');
-    if (_vlabel) _vlabel.textContent = 'v' + APP_VERSION;
+    const sidebarLabel = document.getElementById('sidebar-version-label');
+    if (sidebarLabel) sidebarLabel.textContent = 'Version ' + APP_VERSION;
 }
+document.addEventListener('DOMContentLoaded', _syncVersionLabels);
+if (document.readyState !== 'loading') _syncVersionLabels();
 
 // ─── RACI MATRIX ══════════════════════════════════════════════════════════════
 // Employees see their own department's processes; admins see everything.
